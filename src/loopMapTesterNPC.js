@@ -4,11 +4,15 @@
 import { Npc } from './entities.js';
 import { startAquariumLoopTest } from './events/aquariumLoopTest.js';
 
-export function registerLoopMapTester(npcManager) {
+// 플레이어 근처에 배치할 수 있도록 위치와 이미지를 인자로 받는다
+// 위치와 이미지를 포함해 크기까지 지정할 수 있게 확장한다
+export function registerLoopMapTester(npcManager, options = {}) {
     const npc = new Npc({
-        x: 250,
-        y: 300,
-        image: null, // image asset could be assigned by the game when available
+        x: options.x ?? 250,
+        y: options.y ?? 300,
+        width: options.width ?? options.tileSize ?? 192,
+        height: options.height ?? options.tileSize ?? 192,
+        image: options.image ?? null,
         action: startAquariumLoopTest,
     });
     npcManager.addNpc(npc);
