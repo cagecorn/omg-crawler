@@ -358,6 +358,30 @@ export class Pet extends Entity {
     addConsumable() { return false; }
 }
 
+export class Npc {
+    constructor(config) {
+        this.x = config.x;
+        this.y = config.y;
+        this.width = config.width || config.tileSize || 32;
+        this.height = config.height || config.tileSize || 32;
+        this.image = config.image || null;
+        this.action = config.action || null;
+    }
+
+    render(ctx) {
+        if (this.image) {
+            ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
+        }
+    }
+
+    triggerAction(player) {
+        if (typeof this.action === 'function') {
+            console.log(`NPC 액션 실행: ${this.action.name || 'anonymous'}`);
+            this.action(player);
+        }
+    }
+}
+
 export class Item {
     constructor(x, y, tileSize, name, image) {
         this.id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Math.random().toString(36).slice(2);
