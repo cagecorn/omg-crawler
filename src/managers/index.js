@@ -25,6 +25,7 @@ import { StatusEffectsManager } from './statusEffectsManager.js';
 import { MicroItemAIManager } from './microItemAIManager.js';
 import { EffectIconManager } from './effectIconManager.js';
 import { PetManager } from './petManager.js';
+import { NpcManager } from './npcManager.js';
 import { SquadManager } from './squadManager.js';
 import { LaneAssignmentManager } from './laneAssignmentManager.js';
 import { FormationManager } from './formationManager.js';
@@ -73,6 +74,7 @@ export {
     ParasiteManager,
     MicroItemAIManager,
     PetManager,
+    NpcManager,
     EffectIconManager,
     FormationManager,
     EnemyFormationManager,
