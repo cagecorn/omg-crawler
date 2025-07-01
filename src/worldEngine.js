@@ -1,3 +1,6 @@
+import { NpcManager } from './managers/npcManager.js';
+import { registerLoopMapTester } from './loopMapTesterNPC.js';
+
 export class WorldEngine {
     constructor(game, assets) {
         this.game = game;
@@ -14,6 +17,8 @@ export class WorldEngine {
         this.followPlayer = true;
         // 플레이어 정보는 Game 초기화 이후 setPlayer()로 전달된다
         this.player = null;
+        // 월드맵 NPC들을 관리하기 위한 매니저
+        this.npcManager = new NpcManager();
         this.monsters = [
             {
                 x: this.tileSize * 3,
@@ -40,6 +45,14 @@ export class WorldEngine {
             image: entity?.image || this.assets['player'],
             entity
         };
+        // 테스트용 NPC를 몬스터와 겹치지 않게 플레이어 바로 아래에 배치한다
+        registerLoopMapTester(this.npcManager, this.game, {
+            x: this.player.x,
+            y: this.player.y + this.tileSize,
+            width: this.tileSize,
+            height: this.tileSize,
+            image: this.assets['fire_god'],
+        });
     }
 
     update() {
@@ -48,6 +61,8 @@ export class WorldEngine {
         this.handlePlayerMovement();
         this.updateCamera();
         this.checkCollisions();
+        // 플레이어 이동 시 NPC와의 상호작용도 확인한다
+        this.npcManager.update(this.player);
     }
 
     handleResetFollow() {
@@ -182,5 +197,7 @@ export class WorldEngine {
                 ctx.drawImage(monster.image, monster.x, monster.y, monster.width, monster.height);
             }
         });
+        // NPC들도 그리면서 상호작용을 체크한다
+        this.npcManager.update(this.player, ctx);
     }
 }
