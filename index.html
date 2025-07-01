@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>타일 크롤러</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis@1.5.1/dist/tfjs-vis.umd.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/knn-classifier@1.2.6/dist/knn-classifier.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
+</head>
+<body>
+    <div id="top-menu-bar" class="ui-frame">
+        <button class="menu-btn" data-panel-id="inventory-panel">공동 인벤토리</button>
+        <button class="menu-btn" data-panel-id="mercenary-panel">용병 부대</button>
+        <button class="menu-btn" data-panel-id="squad-management-ui">부대 편성</button>
+        <button class="menu-btn" data-panel-id="character-sheet-panel">플레이어 정보</button>
+    </div>
+    <div id="canvas-container">
+        <canvas id="map-base-canvas" class="game-layer"></canvas>
+        <canvas id="map-decor-canvas" class="game-layer"></canvas>
+        <canvas id="ground-fx-canvas" class="game-layer"></canvas>
+        <canvas id="entity-canvas" class="game-layer"></canvas>
+        <canvas id="vfx-canvas" class="game-layer"></canvas>
+        <canvas id="weather-canvas" class="game-layer"></canvas>
+    </div>
+    <canvas id="minimap-canvas" class="ui-frame"></canvas>
+
+    <div id="ui-panel" class="ui-frame">
+        <h2>플레이어 상태</h2>
+        <div class="stats-content-box">
+            <div id="basic-status">
+                <div class="stat-line">
+                    <span>❤️ HP:</span>
+                    <span id="ui-player-hp">20</span> /
+                    <span id="ui-player-maxHp">20</span>
+                </div>
+                <div class="hp-bar-container">
+                    <div id="ui-hp-bar-fill" class="hp-bar-fill"></div>
+                </div>
+                <div class="stat-line">
+                    <span>💧 MP:</span>
+                    <span id="ui-player-mp">0</span> /
+                    <span id="ui-player-maxMp">0</span>
+                </div>
+                <div class="mp-bar-container">
+                    <div id="ui-mp-bar-fill" class="mp-bar-fill"></div>
+                </div>
+                <div class="stat-line">
+                    <span>💰 골드:</span>
+                    <span id="ui-player-gold">0</span>
+                </div>
+            </div>
+            <div class="exp-bar-container">
+                <div id="ui-exp-bar-fill" class="exp-bar-fill"></div>
+                <div class="exp-bar-text" id="ui-exp-text">0 / 20</div>
+            </div>
+            <div id="inventory-section">
+                <h3>인벤토리</h3>
+                <div id="inventory-slots">
+                </div>
+            </div>
+            <div id="mercenary-controls">
+                <button id="hire-mercenary">전사 용병 고용 (50골드)</button>
+                <button id="hire-archer">궁수 용병 고용 (50골드)</button>
+                <button id="hire-healer">힐러 용병 고용 (50골드)</button>
+                <button id="hire-wizard">마법사 용병 고용 (50골드)</button>
+                <button id="hire-bard">음유시인 고용 (50골드)</button>
+                <button id="hire-summoner">소환사 용병 고용 (50골드)</button>
+                <button id="hire-fire-god">불의 신 고용 (100골드)</button>
+                <button id="save-game-btn">게임 저장</button>
+                <button id="toggle-autobattle-btn">자동 전투: OFF</button>
+            </div>
+        </div>
+    </div>
+    <div id="combat-log-panel" class="ui-frame">
+        <div id="combat-log-content"></div>
+    </div>
+
+    <div id="system-log-panel" class="ui-frame">
+        <div class="log-title">-- SYSTEM LOG --</div>
+        <div id="system-log-content"></div>
+    </div>
+
+
+
+    <div id="inventory-panel" class="modal-panel wide ui-frame window draggable-window hidden">
+        <button class="close-btn" data-panel-id="inventory-panel">X</button> <h2 class="window-header">🎒 공동 인벤토리</h2>
+        <div class="inventory-container">
+            <div class="inventory-grid">
+            </div>
+        </div>
+    </div>
+
+    <div id="mercenary-panel" class="modal-panel wide ui-frame window draggable-window hidden">
+        <button class="close-btn" data-panel-id="mercenary-panel">X</button>
+        <h2 class="window-header">🗡️ 용병 부대</h2>
+        <div id="mercenary-list"></div>
+    </div>
+
+    <div id="squad-management-ui" class="modal-panel ui-frame window draggable-window hidden">
+        <button class="close-btn" data-panel-id="squad-management-ui">X</button>
+        <h2 class="window-header">부대 편성</h2>
+        <div class="squad-content"></div>
+        <div id="formation-grid" class="formation-grid"></div>
+        <button id="confirm-formation-btn" class="confirm-btn">전투 시작</button>
+    </div>
+
+    <!-- 캐릭터 스탯 패널 템플릿 -->
+    <div id="character-sheet-template" class="modal-panel ui-frame window draggable-window hidden template">
+        <button class="close-btn">X</button>
+        <h2 id="sheet-character-name" class="window-header">캐릭터</h2>
+        <div class="stats-content-box sheet-container">
+            <div class="sheet-left">
+                <div class="sheet-equipment equipment-slots"></div>
+                <div class="sheet-synergies synergy-list"></div>
+                <div class="sheet-inventory"></div>
+                <div class="sheet-skills skill-list"></div>
+            </div>
+            <div class="sheet-right">
+                <div id="player-stats-container">
+                    <div class="stat-line">
+                        <span>✨ 레벨:</span>
+                        <span id="ui-player-level">1</span>
+                    </div>
+                    <div class="stat-line">
+                        <span>⭐ 스탯포인트:</span>
+                        <span id="ui-player-statPoints">0</span>
+                    </div>
+                    <div class="stat-line">
+                        <span>💪 힘:</span>
+                        <span id="ui-player-strength">0</span>
+                        <button id="btn-plus-strength" class="stat-plus" style="display:none">+</button>
+                    </div>
+                    <div class="stat-line">
+                        <span>🏃 민첩:</span>
+                        <span id="ui-player-agility">0</span>
+                        <button id="btn-plus-agility" class="stat-plus" style="display:none">+</button>
+                    </div>
+                    <div class="stat-line">
+                        <span>🛡 체력:</span>
+                        <span id="ui-player-endurance">0</span>
+                        <button id="btn-plus-endurance" class="stat-plus" style="display:none">+</button>
+                    </div>
+                    <div class="stat-line">
+                        <span>🔮 집중:</span>
+                        <span id="ui-player-focus">0</span>
+                        <button id="btn-plus-focus" class="stat-plus" style="display:none">+</button>
+                    </div>
+                    <div class="stat-line">
+                        <span>📖 지능:</span>
+                        <span id="ui-player-intelligence">0</span>
+                        <button id="btn-plus-intelligence" class="stat-plus" style="display:none">+</button>
+                    </div>
+                    <div class="stat-line">
+                        <span>👣 이동:</span>
+                        <span id="ui-player-movement">0</span>
+                        <button id="btn-plus-movement" class="stat-plus" style="display:none">+</button>
+                    </div>
+                    <div class="stat-line">
+                        <span>🚶 이동 속도:</span>
+                        <span id="ui-player-movementSpeed">0</span>
+                    </div>
+                    <div class="stat-line">
+                        <span>⚔️ 공격력:</span>
+                        <span id="ui-player-attackPower">2</span>
+                    </div>
+                </div>
+                <div class="stat-tabs">
+                <button class="stat-tab-btn active" data-tab="1">기본 스탯</button>
+                <button class="stat-tab-btn" data-tab="2">무기 숙련도</button>
+            </div>
+            <div id="stat-page-1" class="stat-page active"></div>
+            <div id="stat-page-2" class="stat-page hidden"></div>
+            </div>
+        </div>
+    </div>
+    <!-- 단일 캐릭터 정보를 표시할 패널 -->
+    <div id="character-sheet-panel" class="modal-panel ui-frame window hidden"></div>
+    <div id="ui-container"></div>
+
+    <div id="skill-bar" class="ui-frame">
+        <div class="skill-slot" data-slot-index="0"><span>1</span></div>
+        <div class="skill-slot" data-slot-index="1"><span>2</span></div>
+        <div class="skill-slot" data-slot-index="2"><span>3</span></div>
+    </div>
+
+    <div id="tooltip" class="tooltip ui-frame hidden"></div>
+
+    <script type="module" src="main.js"></script>
+</body>
+</html>
