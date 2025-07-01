@@ -46,7 +46,7 @@ export class WorldEngine {
             entity
         };
         // 테스트용 NPC를 몬스터와 겹치지 않게 플레이어 바로 아래에 배치한다
-        registerLoopMapTester(this.npcManager, {
+        registerLoopMapTester(this.npcManager, this.game, {
             x: this.player.x,
             y: this.player.y + this.tileSize,
             width: this.tileSize,
