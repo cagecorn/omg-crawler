@@ -3,21 +3,33 @@
 import { RLManager } from './rlManager.js';
 import { memoryDB } from '../persistence/MemoryDB.js';
 import { FACTIONS } from '../constants/factions.js';
+import { MAP_WIDTH, MAP_HEIGHT } from '../constants/mapDimensions.js';
 
 export class RLObserver {
-    constructor(eventManager) {
+    constructor(eventManager, mapManager) {
         this.eventManager = eventManager;
+        this.mapManager = mapManager;
         this.rlManager = new RLManager(eventManager);
         this.stats = { total: 0, correct: 0, score: 0 };
         this.prediction = null;
         this.panel = null;
         this.content = null;
-        // number of features passed to TensorFlow model
-        this.featureLength = 6;
+        this.predictionPromise = null;
+        this.roundCompletePromise = null;
+        // grid based feature configuration
+        this.GRID_WIDTH = 8;
+        this.GRID_HEIGHT = 6;
+        this.FEATURE_LENGTH = this.GRID_WIDTH * this.GRID_HEIGHT;
     }
 
     async init() {
-        await this.rlManager.init(this.featureLength);
+        await this.rlManager.init(this.FEATURE_LENGTH);
+        this.mapWidth = this.mapManager
+            ? this.mapManager.width * this.mapManager.tileSize
+            : MAP_WIDTH;
+        this.mapHeight = this.mapManager
+            ? this.mapManager.height * this.mapManager.tileSize
+            : MAP_HEIGHT;
         if (typeof document !== 'undefined') {
             this.panel = document.getElementById('rl-panel');
             if (!this.panel) {
@@ -46,46 +58,67 @@ export class RLObserver {
     }
 
     buildFeatures(playerInfo, enemyInfo) {
-        // Use the standard job IDs defined in src/data/jobs.js
-        const JOBS = ['warrior', 'archer', 'wizard', 'healer', 'summoner', 'bard'];
+        const grid = Array(this.FEATURE_LENGTH).fill(0);
 
-        const countJobs = (list) => {
-            const counts = Object.fromEntries(JOBS.map(j => [j, 0]));
-            for (const unit of list) {
-                if (counts.hasOwnProperty(unit.jobId)) counts[unit.jobId]++;
-            }
-            return counts;
-        };
+        const cellW = this.mapWidth / this.GRID_WIDTH || 1;
+        const cellH = this.mapHeight / this.GRID_HEIGHT || 1;
 
-        const ally = countJobs(playerInfo);
-        const enemy = countJobs(enemyInfo);
-        return JOBS.map(job => ally[job] - enemy[job]);
+        for (const unit of playerInfo) {
+            const gx = Math.floor(unit.x / cellW);
+            const gy = Math.floor(unit.y / cellH);
+            const idx = gy * this.GRID_WIDTH + gx;
+            if (idx >= 0 && idx < grid.length) grid[idx] += 1;
+        }
+
+        for (const unit of enemyInfo) {
+            const gx = Math.floor(unit.x / cellW);
+            const gy = Math.floor(unit.y / cellH);
+            const idx = gy * this.GRID_WIDTH + gx;
+            if (idx >= 0 && idx < grid.length) grid[idx] -= 1;
+        }
+
+        return grid;
     }
 
-    async onRoundStart({ playerInfo, enemyInfo }) {
+    onRoundStart({ playerInfo, enemyInfo }) {
         const features = this.buildFeatures(playerInfo, enemyInfo);
-        const res = await this.rlManager.requestPrediction(features);
-        if (Array.isArray(res) && res.length >= 2) {
-            this.prediction = res[0] > res[1] ? FACTIONS.PLAYER : FACTIONS.ENEMY;
-        } else {
-            this.prediction = Math.random() < 0.5 ? FACTIONS.PLAYER : FACTIONS.ENEMY;
-        }
-        this.render();
+        this.predictionPromise = this.rlManager
+            .predict(features)
+            .then((res) => {
+                if (Array.isArray(res) && res.length >= 2) {
+                    this.prediction = res[0] > res[1] ? FACTIONS.PLAYER : FACTIONS.ENEMY;
+                } else {
+                    this.prediction = Math.random() < 0.5 ? FACTIONS.PLAYER : FACTIONS.ENEMY;
+                }
+            })
+            .catch(() => {
+                this.prediction = Math.random() < 0.5 ? FACTIONS.PLAYER : FACTIONS.ENEMY;
+            })
+            .finally(() => this.render());
     }
 
-    async onRoundComplete(report) {
-        if (!this.prediction) return;
-        this.stats.total++;
-        if (report.winner === this.prediction) {
-            this.stats.correct++;
-            this.stats.score += 50;
-        } else {
-            this.stats.score -= 30;
-        }
-        const accuracy = this.stats.correct / this.stats.total;
-        memoryDB.addEvent({ type: 'rl_accuracy', accuracy, timestamp: new Date().toISOString() });
-        this.prediction = null;
-        this.render();
+    onRoundComplete(report) {
+        this.roundCompletePromise = (async () => {
+            if (this.predictionPromise) {
+                await this.predictionPromise;
+            }
+            if (!this.prediction) return;
+            this.stats.total++;
+            if (report.winner === this.prediction) {
+                this.stats.correct++;
+                this.stats.score += 50;
+            } else {
+                this.stats.score -= 30;
+            }
+            if (report.playerUnits && report.enemyUnits) {
+                const features = this.buildFeatures(report.playerUnits, report.enemyUnits);
+                this.rlManager.record({ features, winner: report.winner });
+            }
+            const accuracy = this.stats.correct / this.stats.total;
+            memoryDB.addEvent({ type: 'rl_accuracy', accuracy, timestamp: new Date().toISOString() });
+            this.prediction = null;
+            this.render();
+        })();
     }
 
     render() {

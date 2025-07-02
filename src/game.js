@@ -324,7 +324,7 @@ export class Game {
         this.cinematicManager = new CinematicManager(this);
         this.dataRecorder = new DataRecorder(this);
         this.dataRecorder.init();
-        this.rlObserver = new RLObserver(this.eventManager);
+        this.rlObserver = new RLObserver(this.eventManager, this.mapManager);
         this.rlObserver.init();
         this.guidelineLoader = new GuidelineLoader(SETTINGS.GUIDELINE_REPO_URL);
         this.guidelineLoader.load();

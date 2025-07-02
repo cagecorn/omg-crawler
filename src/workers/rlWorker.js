@@ -62,27 +62,11 @@ async function handleMessage(e) {
             dataset = [];
             break;
         case 'record':
-            if (data.battle) {
-                const { playerInfo, enemyInfo, winner } = data.battle;
-                if (!playerInfo || !enemyInfo || !winner) break;
-
-                // Mirror RLObserver.buildFeatures using jobId values
-                const JOBS = ['warrior', 'archer', 'wizard', 'healer', 'summoner', 'bard'];
-                const countJobs = (list) => {
-                    const counts = Object.fromEntries(JOBS.map(j => [j, 0]));
-                    for (const unit of list) {
-                        if (counts.hasOwnProperty(unit.jobId)) counts[unit.jobId]++;
-                    }
-                    return counts;
-                };
-                const allyJobCounts = countJobs(playerInfo);
-                const enemyJobCounts = countJobs(enemyInfo);
-                const input = JOBS.map(job => allyJobCounts[job] - enemyJobCounts[job]);
-
-                const output = winner === 'player' ? [1, 0] : [0, 1]; // One-hot 인코딩
+            if (data && data.features && data.winner) {
+                const input = data.features;
+                const output = data.winner === 'player' ? [1, 0] : [0, 1];
                 dataset.push({ input, output });
 
-                // 데이터가 10건 쌓일 때마다 모델을 다시 훈련
                 if (dataset.length > 0 && dataset.length % 10 === 0) {
                    await trainModel();
                 }
@@ -90,7 +74,7 @@ async function handleMessage(e) {
             break;
         case 'predict':
             if (model && tf) {
-                const inputTensor = tf.tensor2d([data], [1, data.length]);
+                const inputTensor = tf.tensor2d([data], [1, featureLength]);
                 const predictionTensor = model.predict(inputTensor);
                 const prediction = await predictionTensor.data();
 
