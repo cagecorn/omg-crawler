@@ -4,14 +4,19 @@ import { RLManager } from './rlManager.js';
 import { memoryDB } from '../persistence/MemoryDB.js';
 import { FACTIONS } from '../constants/factions.js';
 import { MAP_WIDTH, MAP_HEIGHT } from '../constants/mapDimensions.js';
+import BattlePredictionManager from './battlePredictionManager.js';
+import BattleMemoryManager from './battleMemoryManager.js';
 
 export class RLObserver {
     constructor(eventManager, mapManager) {
         this.eventManager = eventManager;
         this.mapManager = mapManager;
         this.rlManager = new RLManager(eventManager);
+        this.predictionManager = new BattlePredictionManager(this.rlManager);
+        this.memoryManager = new BattleMemoryManager(this.rlManager);
         this.stats = { total: 0, correct: 0, score: 0 };
         this.prediction = null;
+        this.roundFeatures = null;
         this.currentRound = 0;
         this.panel = null;
         this.content = null;
@@ -24,7 +29,7 @@ export class RLObserver {
     }
 
     async init() {
-        await this.rlManager.init(this.FEATURE_LENGTH);
+        await this.predictionManager.init(3);
         this.mapWidth = this.mapManager
             ? this.mapManager.width * this.mapManager.tileSize
             : MAP_WIDTH;
@@ -59,42 +64,20 @@ export class RLObserver {
     }
 
     buildFeatures(playerInfo, enemyInfo) {
-        const grid = Array(this.FEATURE_LENGTH).fill(0);
-
-        const cellW = this.mapWidth / this.GRID_WIDTH || 1;
-        const cellH = this.mapHeight / this.GRID_HEIGHT || 1;
-
-        for (const unit of playerInfo) {
-            const gx = Math.floor(unit.x / cellW);
-            const gy = Math.floor(unit.y / cellH);
-            const idx = gy * this.GRID_WIDTH + gx;
-            if (idx >= 0 && idx < grid.length) grid[idx] += 1;
-        }
-
-        for (const unit of enemyInfo) {
-            const gx = Math.floor(unit.x / cellW);
-            const gy = Math.floor(unit.y / cellH);
-            const idx = gy * this.GRID_WIDTH + gx;
-            if (idx >= 0 && idx < grid.length) grid[idx] -= 1;
-        }
-
-        return grid;
+        return this.predictionManager.buildFeatures(playerInfo, enemyInfo);
     }
 
     onRoundStart({ round, playerInfo, enemyInfo }) {
         this.currentRound = round || 0;
-        const features = this.buildFeatures(playerInfo, enemyInfo);
-        this.predictionPromise = this.rlManager
-            .predict(features)
-            .then((res) => {
-                if (Array.isArray(res) && res.length >= 2) {
-                    this.prediction = res[0] > res[1] ? FACTIONS.PLAYER : FACTIONS.ENEMY;
-                } else {
-                    this.prediction = Math.random() < 0.5 ? FACTIONS.PLAYER : FACTIONS.ENEMY;
-                }
+        this.predictionPromise = this.predictionManager
+            .predict(playerInfo, enemyInfo)
+            .then(({ prediction, features }) => {
+                this.prediction = prediction || (Math.random() < 0.5 ? FACTIONS.PLAYER : FACTIONS.ENEMY);
+                this.roundFeatures = features;
             })
             .catch(() => {
                 this.prediction = Math.random() < 0.5 ? FACTIONS.PLAYER : FACTIONS.ENEMY;
+                this.roundFeatures = null;
             })
             .finally(() => {
                 if (this.eventManager) {
@@ -121,9 +104,8 @@ export class RLObserver {
             } else {
                 this.stats.score -= 30;
             }
-            if (report.playerUnits && report.enemyUnits) {
-                const features = this.buildFeatures(report.playerUnits, report.enemyUnits);
-                this.rlManager.record({ features, winner: report.winner });
+            if (report.playerUnits && report.enemyUnits && this.roundFeatures) {
+                this.memoryManager.record({ features: this.roundFeatures, winner: report.winner });
             }
             const accuracy = this.stats.correct / this.stats.total;
             memoryDB.addEvent({ type: 'rl_accuracy', accuracy, timestamp: new Date().toISOString() });
@@ -138,6 +120,7 @@ export class RLObserver {
                 });
             }
             this.prediction = null;
+            this.roundFeatures = null;
             this.render();
         })();
     }
