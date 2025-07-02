@@ -9,12 +9,12 @@ export class RLManager {
         this.ready = false;
     }
 
-    async init() {
+    async init(featLength = 3) {
         if (typeof Worker === 'undefined') return;
         try {
             const url = new URL('../workers/rlWorker.js', import.meta.url);
             this.worker = new Worker(url);
-            this.worker.postMessage({ type: 'init' });
+            this.worker.postMessage({ type: 'init', featLength });
             this.ready = true;
         } catch (err) {
             console.warn('[RLManager] Worker init failed:', err);

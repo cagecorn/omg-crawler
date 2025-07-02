@@ -12,10 +12,12 @@ export class RLObserver {
         this.prediction = null;
         this.panel = null;
         this.content = null;
+        // number of features passed to TensorFlow model
+        this.featureLength = 6;
     }
 
     async init() {
-        await this.rlManager.init();
+        await this.rlManager.init(this.featureLength);
         if (typeof document !== 'undefined') {
             this.panel = document.getElementById('rl-panel');
             if (!this.panel) {
@@ -44,9 +46,17 @@ export class RLObserver {
     }
 
     buildFeatures(playerInfo, enemyInfo) {
-        const allyCount = playerInfo.length;
-        const enemyCount = enemyInfo.length;
-        return [allyCount, enemyCount, allyCount - enemyCount];
+        const JOBS = ['검사', '궁수', '마법사', '성직자', '도적', '기사'];
+        const countJobs = (list) => {
+            const counts = Object.fromEntries(JOBS.map(j => [j, 0]));
+            for (const unit of list) {
+                if (counts.hasOwnProperty(unit.job)) counts[unit.job]++;
+            }
+            return counts;
+        };
+        const ally = countJobs(playerInfo);
+        const enemy = countJobs(enemyInfo);
+        return JOBS.map(job => ally[job] - enemy[job]);
     }
 
     async onRoundStart({ playerInfo, enemyInfo }) {
