@@ -32,3 +32,52 @@ export function adjustMonsterStatsForAquarium(baseStats = {}) {
 
     return adjusted;
 }
+
+// --- New Helper Functions for Aquarium Loop ---
+import { ITEMS } from '../data/items.js';
+
+// Precompute lists so random selection is fast
+export const ALL_WEAPON_IDS = [
+    'short_sword', 'long_bow', 'estoc', 'axe', 'mace', 'staff',
+    'spear', 'scythe', 'whip', 'dagger', 'violin_bow'
+];
+
+export const CONSUMABLE_IDS = Object.keys(ITEMS).filter(
+    id => ITEMS[id].type === 'consumable'
+);
+
+/**
+ * Equip a character with a random weapon and optionally a shield.
+ * @param {Entity} entity - Character receiving the weapon
+ * @param {ItemFactory} itemFactory - Factory used to create items
+ * @param {EquipmentManager} equipmentManager - Manager handling equipment slots
+ */
+export function equipRandomWeapon(entity, itemFactory, equipmentManager) {
+    const id = ALL_WEAPON_IDS[Math.floor(Math.random() * ALL_WEAPON_IDS.length)];
+    const weapon = itemFactory.create(id, 0, 0, 1);
+    if (!weapon) return;
+    equipmentManager.equip(entity, weapon, null);
+
+    const tags = weapon.tags || [];
+    const isMelee = tags.includes('melee') && !tags.includes('ranged');
+    const excluded = tags.includes('spear') || tags.includes('scythe');
+    if (isMelee && !excluded && Math.random() < 0.5) {
+        const shield = itemFactory.create('shield_basic', 0, 0, 1);
+        if (shield) equipmentManager.equip(entity, shield, null);
+    }
+}
+
+/**
+ * Fill a character's consumable inventory with random items.
+ *
+ * @param {Entity} entity - Character gaining consumables
+ * @param {number} count - Number of consumables to add
+ * @param {ItemFactory} itemFactory - Factory used to create items
+ */
+export function addRandomConsumables(entity, count, itemFactory) {
+    for (let i = 0; i < count; i++) {
+        const cId = CONSUMABLE_IDS[Math.floor(Math.random() * CONSUMABLE_IDS.length)];
+        const item = itemFactory.create(cId, 0, 0, 1);
+        if (item) entity.addConsumable(item);
+    }
+}
