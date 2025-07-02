@@ -14,6 +14,8 @@ export function startAquariumLoopTest(game) {
 
     player.isVisible = false;
     player.isObserver = true;
+    player.isSpectator = true;
+    if (game.cameraDrag) game.cameraDrag.followPlayer = false;
     console.log('✅ [규칙 4] 플레이어가 관찰자 모드로 전환되었습니다.');
 
     const diceBot = new DiceBot();
@@ -51,7 +53,6 @@ export function startAquariumLoopTest(game) {
         }
         if (game.metaAIManager.groups['player_party']) {
             game.metaAIManager.groups['player_party'].members = [];
-            game.metaAIManager.groups['player_party'].addMember(player);
         }
     }
     if (game.entityManager) {

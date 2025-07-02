@@ -24,6 +24,7 @@ class Entity {
         this.attackCooldown = 0;
         this.isPlayer = false;
         this.isFriendly = false;
+        this.isSpectator = false; // 전투에 참여하지 않는 관전자 여부
         this.ai = null;
         this.roleAI = null;     // 힐러, 소환사 등 직업 역할 AI
         this.fallbackAI = null; // 무기가 없을 때 사용할 기본 전투 AI
