@@ -22,6 +22,7 @@
 * **포그 오브 워 토글:** `config/gameSettings.js`의 `ENABLE_FOG_OF_WAR` 값을 통해 안개 효과를 켜거나 끌 수 있습니다. 게임 도중 값을 변경하면 즉시 반영됩니다.
 * **TensorFlow 길찾기 토글:** `config/gameSettings.js`의 `ENABLE_TENSORFLOW_PATHING`을 활성화하면 학습된 모델을 이용해 보다 자연스러운 경로를 계산합니다. 기본값은 꺼져 있으며, 모델 파일이 없을 경우 자동으로 기존 BFS 로직을 사용합니다.
 * **평판 시스템 토글:** `config/gameSettings.js`의 `ENABLE_REPUTATION_SYSTEM` 값을 false로 설정하면 평판 기록과 모델 로드를 생략하여 성능을 높일 수 있습니다.
+* **실시간 학습 매니저:** `RLManager`가 전투 로그를 Web Worker로 전송해 TensorFlow 모델을 실시간으로 학습하며 예측 기능을 제공합니다.
 
 ## 개발 원칙
 
