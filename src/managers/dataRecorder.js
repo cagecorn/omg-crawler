@@ -19,6 +19,7 @@ class DataRecorder {
         this.filePath = filePath;
         this.format = format;
         this.data = [];
+        this.rlMetrics = [];
         this.isRecording = true;
         this.fs = null;
     }
@@ -35,6 +36,15 @@ class DataRecorder {
             if (this.isRecording) {
                 this.record(entity, action);
             }
+        });
+
+        this.eventManager.subscribe('rl_prediction_result', (data) => {
+            this.rlMetrics.push({
+                round: data.round,
+                correct: data.correct,
+                accuracy: data.accuracy,
+                score: data.score,
+            });
         });
 
         console.log('[DataRecorder] Now recording player actions for AI training.');
@@ -75,7 +85,7 @@ class DataRecorder {
             return;
         }
 
-        const dataStr = JSON.stringify(this.data, null, 2);
+        const dataStr = JSON.stringify({ actions: this.data, rlMetrics: this.rlMetrics }, null, 2);
 
         // Node 환경에서는 지정된 파일 경로로 저장한다.
         if (this.fs) {

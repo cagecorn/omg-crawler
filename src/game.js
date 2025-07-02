@@ -83,6 +83,7 @@ import { LanePusherAI } from './ai/archetypes.js';
 import { LaneAssignmentManager } from './managers/laneAssignmentManager.js';
 import { FormationManager } from './managers/formationManager.js';
 import { TooltipManager } from './managers/tooltipManager.js';
+import { RLObserver } from './managers/index.js';
 
 export class Game {
     constructor() {
@@ -323,6 +324,8 @@ export class Game {
         this.cinematicManager = new CinematicManager(this);
         this.dataRecorder = new DataRecorder(this);
         this.dataRecorder.init();
+        this.rlObserver = new RLObserver(this.eventManager);
+        this.rlObserver.init();
         this.guidelineLoader = new GuidelineLoader(SETTINGS.GUIDELINE_REPO_URL);
         this.guidelineLoader.load();
         if (SETTINGS.ENABLE_POSSESSION_SYSTEM) {
