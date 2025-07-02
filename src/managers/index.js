@@ -42,6 +42,7 @@ import { EntityManager } from './entityManager.js';
 import GuidelineLoader from './guidelineLoader.js';
 import { TooltipManager } from './tooltipManager.js';
 import { BattleRecorder } from './battleRecorder.js';
+import { RLManager } from './rlManager.js';
 // DataRecorder is only needed in a Node.js environment so we lazy-load it
 let DataRecorder = null;
 if (typeof process !== 'undefined' && process.versions?.node) {
@@ -95,4 +96,5 @@ export {
     TooltipManager,
     DataRecorder,
     BattleRecorder,
+    RLManager,
 };
