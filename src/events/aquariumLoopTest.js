@@ -5,6 +5,7 @@ import { DiceBot } from '../utils/diceBot.js';
 import { FormationManager } from '../managers/formationManager.js';
 import { EnemyFormationManager } from '../managers/enemyFormationManager.js';
 import { AquariumMapManager } from '../aquariumMap.js';
+import { equipRandomWeapon, addRandomConsumables } from '../utils/aquariumUtils.js';
 
 export function startAquariumLoopTest(game) {
     const player = game.gameState.player;
@@ -91,6 +92,8 @@ export function startAquariumLoopTest(game) {
             image
         });
         merc.equipmentRenderManager = game.equipmentRenderManager;
+        equipRandomWeapon(merc, game.itemFactory, game.equipmentManager);
+        addRandomConsumables(merc, 4, game.itemFactory);
         game.mercenaryManager.mercenaries.push(merc);
         game.playerGroup.addMember(merc);
         allyFormation.assign(idx, merc.id);
@@ -112,6 +115,8 @@ export function startAquariumLoopTest(game) {
         enemyMerc.isFriendly = false;
         enemyMerc.direction = -1;
         enemyMerc.equipmentRenderManager = game.equipmentRenderManager;
+        equipRandomWeapon(enemyMerc, game.itemFactory, game.equipmentManager);
+        addRandomConsumables(enemyMerc, 4, game.itemFactory);
         game.monsterManager.monsters.push(enemyMerc);
         game.monsterGroup.addMember(enemyMerc);
         enemyFormation.assign(idx, enemyMerc.id);

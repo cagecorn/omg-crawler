@@ -2,7 +2,7 @@
 // Manages patches and features placed on the Aquarium map
 import { TRAITS } from '../data/traits.js';
 import { EquipmentManager } from './equipmentManager.js';
-import { adjustMonsterStatsForAquarium } from '../utils/aquariumUtils.js';
+import { adjustMonsterStatsForAquarium, addRandomConsumables } from '../utils/aquariumUtils.js';
 export class AquariumManager {
     constructor(eventManager, monsterManager, itemManager, mapManager, charFactory, itemFactory, vfxManager = null, traitManager = null) {
         this.eventManager = eventManager;
@@ -115,6 +115,7 @@ export class AquariumManager {
                             shieldSpawned = true;
                         }
                     }
+                    addRandomConsumables(monster, 4, this.itemFactory);
                 }
             }
         }
@@ -160,6 +161,7 @@ export class AquariumManager {
                                 this.equipmentManager.equip(monster, shield, null);
                             }
                         }
+                        addRandomConsumables(monster, 4, this.itemFactory);
                     }
                 }
                 // --- 여기까지 ---
