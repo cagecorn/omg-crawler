@@ -29,9 +29,31 @@ export class RLManager {
         });
     }
 
+    _sanitize(obj) {
+        if (obj === null || obj === undefined) return obj;
+        if (typeof obj !== 'object') return obj;
+
+        if (typeof HTMLImageElement !== 'undefined' && obj instanceof HTMLImageElement) {
+            return { src: obj.src };
+        }
+
+        if (Array.isArray(obj)) {
+            return obj.map((v) => this._sanitize(v));
+        }
+
+        const result = {};
+        for (const [key, value] of Object.entries(obj)) {
+            if (typeof value === 'function') continue;
+            if (key === 'eventManager' || key === 'mapManager' || key === 'worker') continue;
+            result[key] = this._sanitize(value);
+        }
+        return result;
+    }
+
     _send(type, data) {
         if (this.ready && this.worker) {
-            this.worker.postMessage({ type, data });
+            const cleanData = this._sanitize(data);
+            this.worker.postMessage({ type, data: cleanData });
         }
     }
 
