@@ -77,5 +77,14 @@ export const WEAPON_SKILLS = {
         tags: ['weapon_skill', 'offensive', 'mace'],
         twistedDuration: 2000,
     },
+    thunder_strike: {
+        id: 'thunder_strike',
+        name: '뇌전 일격',
+        description: '대상을 타격하여 감전 상태로 만듭니다.',
+        type: 'active',
+        cooldown: 20,
+        tags: ['weapon_skill', 'offensive', 'stun_baton'],
+        effects: { target: ['shock'] },
+    },
     // 에스톡 레벨 1 (창의 돌진 스킬을 공유)
 };

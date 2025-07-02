@@ -211,6 +211,11 @@ export class MetaAIManager {
                     context.statusEffectsManager?.applyTwisted(action.target, skillData.twistedDuration || 2000);
                     entity.attackCooldown = Math.max(1, Math.round(60 / (entity.attackSpeed || 1)));
                 }
+                if (action.skillId === 'thunder_strike' && context.effectManager && action.target) {
+                    eventManager.publish('entity_attack', { attacker: entity, defender: action.target, skill: skillData });
+                    context.effectManager.addEffect(action.target, 'shock');
+                    entity.attackCooldown = Math.max(1, Math.round(60 / (entity.attackSpeed || 1)));
+                }
 
                 if (context.speechBubbleManager) {
                     context.speechBubbleManager.addBubble(entity, skillData.name);

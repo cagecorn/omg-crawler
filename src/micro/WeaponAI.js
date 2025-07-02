@@ -200,6 +200,34 @@ export class MaceAI extends SwordAI {
     }
 }
 
+export class StunBatonAI extends MaceAI {
+    decideAction(wielder, weapon, context) {
+        const { enemies } = context;
+        if (!enemies || enemies.length === 0) return { type: 'idle' };
+
+        let nearest = null;
+        let minDist = Infinity;
+        for (const e of enemies) {
+            const d = Math.hypot(e.x - wielder.x, e.y - wielder.y);
+            if (d < minDist) { minDist = d; nearest = e; }
+        }
+
+        if (!nearest) return { type: 'idle' };
+
+        const skillId = 'thunder_strike';
+        if (
+            weapon?.weaponStats?.canUseSkill(skillId) &&
+            (wielder.skillCooldowns[skillId] || 0) <= 0 &&
+            minDist <= wielder.attackRange &&
+            wielder.attackCooldown === 0
+        ) {
+            return { type: 'weapon_skill', skillId, target: nearest };
+        }
+
+        return super.decideAction(wielder, weapon, context);
+    }
+}
+
 export class StaffAI extends BowAI {
     // 지능 수치가 높을수록 기본 공격 피해가 증가합니다.
     // 실제 피해 계산은 CombatCalculator에서 처리됩니다.
