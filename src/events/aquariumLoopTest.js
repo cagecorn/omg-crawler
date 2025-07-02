@@ -44,6 +44,19 @@ export function startAquariumLoopTest(game) {
     game.mapManager = new AquariumMapManager();
     game.monsterManager.monsters = [];
     game.mercenaryManager.mercenaries = [];
+    if (game.aquariumManager) game.aquariumManager.features = [];
+    if (game.metaAIManager) {
+        if (game.metaAIManager.groups['dungeon_monsters']) {
+            game.metaAIManager.groups['dungeon_monsters'].members = [];
+        }
+        if (game.metaAIManager.groups['player_party']) {
+            game.metaAIManager.groups['player_party'].members = [];
+            game.metaAIManager.groups['player_party'].addMember(player);
+        }
+    }
+    if (game.entityManager) {
+        game.entityManager.init(player, [], []);
+    }
 
     const tileSize = game.mapManager.tileSize;
     const allyFormation = new FormationManager(4, 3, tileSize);
@@ -67,6 +80,7 @@ export function startAquariumLoopTest(game) {
             jobId,
             image
         });
+        merc.equipmentRenderManager = game.equipmentRenderManager;
         game.mercenaryManager.mercenaries.push(merc);
         game.playerGroup.addMember(merc);
         allyFormation.assign(idx, merc.id);
@@ -74,22 +88,32 @@ export function startAquariumLoopTest(game) {
     });
 
     const enemyMap = {};
-    enemyParty.forEach((_, idx) => {
-        const monster = game.factory.create('monster', {
+    enemyParty.forEach((data, idx) => {
+        const jobId = jobMap[data.job] || 'warrior';
+        const image = game.assets[jobId] || game.assets.mercenary;
+        const enemyMerc = game.factory.create('mercenary', {
             x: 0,
             y: 0,
             tileSize,
             groupId: game.monsterGroup.id,
-            image: game.loader.assets.monster
+            jobId,
+            image
         });
-        game.monsterManager.monsters.push(monster);
-        game.monsterGroup.addMember(monster);
-        enemyFormation.assign(idx, monster.id);
-        enemyMap[monster.id] = monster;
+        enemyMerc.isFriendly = false;
+        enemyMerc.direction = -1;
+        enemyMerc.equipmentRenderManager = game.equipmentRenderManager;
+        game.monsterManager.monsters.push(enemyMerc);
+        game.monsterGroup.addMember(enemyMerc);
+        enemyFormation.assign(idx, enemyMerc.id);
+        enemyMap[enemyMerc.id] = enemyMerc;
     });
 
     allyFormation.apply(allyOrigin, entityMap);
     enemyFormation.apply(enemyOrigin, enemyMap);
+
+    if (game.entityManager) {
+        game.entityManager.init(player, game.mercenaryManager.mercenaries, game.monsterManager.monsters);
+    }
 
     game.gameState.currentState = 'COMBAT';
     game.vfxManager.showEventText('12 vs 12 전투 시작!', 180);
