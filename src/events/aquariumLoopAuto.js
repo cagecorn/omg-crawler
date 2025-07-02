@@ -3,6 +3,7 @@
 
 import { startAquariumLoopTest } from './aquariumLoopTest.js';
 import { BattleRecorder } from '../managers/battleRecorder.js';
+import { FACTIONS } from '../constants/factions.js';
 
 export function startAquariumBattleLoop(game, { rounds = Infinity, onRoundComplete } = {}) {
     let currentRound = 0;
@@ -44,7 +45,7 @@ export function startAquariumBattleLoop(game, { rounds = Infinity, onRoundComple
         const enemiesAlive = monsterManager.monsters.filter(m => m.hp > 0);
         if (alliesAlive.length === 0 || enemiesAlive.length === 0) {
             running = false;
-            const winner = alliesAlive.length > 0 ? 'player' : 'enemy';
+            const winner = alliesAlive.length > 0 ? FACTIONS.PLAYER : FACTIONS.ENEMY;
             const survivors = (alliesAlive.length > 0 ? alliesAlive : enemiesAlive).length;
             const report = game.battleRecorder.endBattle({ winner, survivors });
             report.round = currentRound;
