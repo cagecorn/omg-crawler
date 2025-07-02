@@ -5,12 +5,15 @@ import { MbtiEngine } from './ai/MbtiEngine.js';
 import { MistakeEngine } from './ai/MistakeEngine.js';
 import { RLInputManager } from './rlInputManager.js';
 import { SETTINGS } from '../../config/gameSettings.js';
+import { MAP_WIDTH, MAP_HEIGHT } from '../constants/mapDimensions.js';
+import { serializeUnits } from '../utils/aiSerializer.js';
 
 export const STRATEGY = {
     IDLE: 'idle',
     AGGRESSIVE: 'aggressive',
     DEFENSIVE: 'defensive',
 };
+
 
 class AIGroup {
     constructor(id, strategy = STRATEGY.AGGRESSIVE) {
@@ -58,6 +61,35 @@ export class MetaAIManager {
     setGroupStrategy(id, strategy) {
         if (this.groups[id]) {
             this.groups[id].strategy = strategy;
+        }
+    }
+
+    async predictBattleOutcome(playerUnits, enemyUnits) {
+        if (!this.rlInputManager) return null;
+        const unitsA = serializeUnits(playerUnits);
+        const unitsB = serializeUnits(enemyUnits);
+        const gridW = 8;
+        const gridH = 6;
+        const grid = Array(gridW * gridH).fill(0);
+        const cellW = (MAP_WIDTH) / gridW;
+        const cellH = (MAP_HEIGHT) / gridH;
+        for (const u of unitsA) {
+            const gx = Math.floor(u.x / cellW);
+            const gy = Math.floor(u.y / cellH);
+            const idx = gy * gridW + gx;
+            if (idx >= 0 && idx < grid.length) grid[idx] += 1;
+        }
+        for (const u of unitsB) {
+            const gx = Math.floor(u.x / cellW);
+            const gy = Math.floor(u.y / cellH);
+            const idx = gy * gridW + gx;
+            if (idx >= 0 && idx < grid.length) grid[idx] -= 1;
+        }
+        try {
+            return await this.rlInputManager.rlManager.predict(grid);
+        } catch (err) {
+            console.warn('[MetaAIManager] prediction failed:', err);
+            return null;
         }
     }
 

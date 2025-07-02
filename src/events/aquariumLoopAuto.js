@@ -4,6 +4,7 @@
 import { startAquariumLoopTest } from './aquariumLoopTest.js';
 import { BattleRecorder } from '../managers/battleRecorder.js';
 import { FACTIONS } from '../constants/factions.js';
+import { serializeUnits } from '../utils/aiSerializer.js';
 
 export function startAquariumBattleLoop(game, { rounds = Infinity, onRoundComplete } = {}) {
     let currentRound = 0;
@@ -62,4 +63,22 @@ export function startAquariumBattleLoop(game, { rounds = Infinity, onRoundComple
 
     eventManager.subscribe('entity_death', handleEndCheck);
     startRound();
+}
+
+export function setupAquariumLoopAuto(scene, rlManager) {
+    const { eventManager } = scene;
+    eventManager.subscribe('battle_round_complete', (data) => {
+        console.log(`Aquarium-Loop: Battle ended. Winner: ${data.winner}`);
+        const battleResultForAI = {
+            winner: data.winner,
+            playerInfo: serializeUnits(data.playerUnits),
+            enemyInfo: serializeUnits(data.enemyUnits)
+        };
+        rlManager?.record(battleResultForAI);
+        setTimeout(() => {
+            if (typeof scene.prepareNextBattle === 'function') {
+                scene.prepareNextBattle();
+            }
+        }, 1000);
+    });
 }
