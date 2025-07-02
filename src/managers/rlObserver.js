@@ -46,14 +46,17 @@ export class RLObserver {
     }
 
     buildFeatures(playerInfo, enemyInfo) {
-        const JOBS = ['검사', '궁수', '마법사', '성직자', '도적', '기사'];
+        // Use the standard job IDs defined in src/data/jobs.js
+        const JOBS = ['warrior', 'archer', 'wizard', 'healer', 'summoner', 'bard'];
+
         const countJobs = (list) => {
             const counts = Object.fromEntries(JOBS.map(j => [j, 0]));
             for (const unit of list) {
-                if (counts.hasOwnProperty(unit.job)) counts[unit.job]++;
+                if (counts.hasOwnProperty(unit.jobId)) counts[unit.jobId]++;
             }
             return counts;
         };
+
         const ally = countJobs(playerInfo);
         const enemy = countJobs(enemyInfo);
         return JOBS.map(job => ally[job] - enemy[job]);

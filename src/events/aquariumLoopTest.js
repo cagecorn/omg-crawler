@@ -68,7 +68,16 @@ export function startAquariumLoopTest(game) {
 
     const entityMap = { [player.id]: player };
 
-    const jobMap = { '검사': 'warrior', '궁수': 'archer', '마법사': 'wizard', '성직자': 'healer', '도적': 'warrior', '기사': 'warrior' };
+    const jobMap = {
+        '검사': 'warrior',
+        '궁수': 'archer',
+        '마법사': 'wizard',
+        '성직자': 'healer',
+        '도적': 'warrior',
+        '기사': 'warrior',
+        '소환사': 'summoner',
+        '음유시인': 'bard'
+    };
 
     playerParty.forEach((data, idx) => {
         const jobId = jobMap[data.job] || 'warrior';
