@@ -58,12 +58,14 @@ export function startAquariumLoopTest(game) {
 
     playerParty.forEach((data, idx) => {
         const jobId = jobMap[data.job] || 'warrior';
+        const image = game.assets[jobId] || game.assets.mercenary;
         const merc = game.factory.create('mercenary', {
             x: 0,
             y: 0,
             tileSize,
             groupId: game.playerGroup.id,
-            jobId
+            jobId,
+            image
         });
         game.mercenaryManager.mercenaries.push(merc);
         game.playerGroup.addMember(merc);
