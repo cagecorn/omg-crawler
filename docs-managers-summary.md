@@ -38,6 +38,7 @@
 | `equipmentRenderManager.js` | 장비 외형을 엔티티 위에 그려 주는 렌더링 전담 모듈. |
 | `eventManager.js` | 게임 전반의 이벤트 발행/구독을 담당하는 간단한 Pub/Sub 시스템. |
 | `fileLogManager.js` | 노드 환경에서 전투 로그를 파일로 저장합니다. |
+| `battleRecorder.js` | 자동 전투 결과를 정리해 TensorFlow 학습 데이터로 제공합니다. |
 | `fogManager.js` | 맵 타일의 탐색 여부를 추적해 안개(Fog of War)를 구현합니다. |
 | `item-ai-manager.js` | 아이템 사용 AI 로직을 묶어 관리합니다. |
 | `itemManager.js` | 맵 위에 존재하는 아이템의 생성과 삭제, 렌더링을 담당합니다. |

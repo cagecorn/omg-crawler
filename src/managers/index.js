@@ -41,6 +41,7 @@ import { ReputationManager } from './ReputationManager.js';
 import { EntityManager } from './entityManager.js';
 import GuidelineLoader from './guidelineLoader.js';
 import { TooltipManager } from './tooltipManager.js';
+import { BattleRecorder } from './battleRecorder.js';
 // DataRecorder is only needed in a Node.js environment so we lazy-load it
 let DataRecorder = null;
 if (typeof process !== 'undefined' && process.versions?.node) {
@@ -93,4 +94,5 @@ export {
     StatusEffectsManager,
     TooltipManager,
     DataRecorder,
+    BattleRecorder,
 };
