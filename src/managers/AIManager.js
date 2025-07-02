@@ -1,10 +1,12 @@
 import { DecisionEngine } from '../ai/engines/DecisionEngine.js';
+import { RLInputManager } from './rlInputManager.js';
 
 export class AIManager {
-    constructor(eventManager, squadManager) {
+    constructor(eventManager, squadManager, rlManager = null) {
         this.eventManager = eventManager;
         this.squadManager = squadManager;
-        this.decisionEngine = new DecisionEngine(eventManager);
+        const rlInput = rlManager ? new RLInputManager(rlManager) : null;
+        this.decisionEngine = new DecisionEngine(eventManager, rlInput);
         this.aiEntities = new Set();
     }
 
@@ -18,12 +20,12 @@ export class AIManager {
         this.aiEntities.delete(entity);
     }
 
-    update(context) {
+    async update(context) {
         for (const entity of this.aiEntities) {
             if (entity.hp <= 0 || !entity.ai) continue;
             const squad = this.squadManager?.getSquadForMerc(entity.id);
             const strategy = squad ? squad.strategy : 'AGGRESSIVE';
-            const action = this.decisionEngine.decideFinalAction(entity, context, strategy);
+            const action = await this.decisionEngine.decideFinalAction(entity, context, strategy);
             this.executeAction(entity, action, context);
         }
     }

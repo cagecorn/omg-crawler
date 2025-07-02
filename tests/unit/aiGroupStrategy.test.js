@@ -13,7 +13,7 @@ test('setGroupStrategy updates strategy', () => {
     assert.strictEqual(group.strategy, STRATEGY.IDLE);
 });
 
-test('IDLE strategy prevents movement', () => {
+test('IDLE strategy prevents movement', async () => {
     const em = new EventManager();
     const aiManager = new MetaAIManager(em);
     const mapManager = { tileSize: 1, isWallAt: () => false };
@@ -26,7 +26,7 @@ test('IDLE strategy prevents movement', () => {
     group.addMember(self);
     enemyGroup.addMember(enemy);
     const context = { player, mapManager, pathfindingManager, eventManager: em };
-    aiManager.update(context);
+    await aiManager.update(context);
     assert.strictEqual(self.x, 0);
     assert.strictEqual(self.y, 0);
 });

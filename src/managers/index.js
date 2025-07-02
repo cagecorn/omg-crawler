@@ -45,6 +45,7 @@ import { BattleRecorder } from './battleRecorder.js';
 import { RLManager } from './rlManager.js';
 import { RLUIManager } from './rlUIManager.js';
 import { RLObserver } from './rlObserver.js';
+import { RLInputManager } from './rlInputManager.js';
 // DataRecorder is only needed in a Node.js environment so we lazy-load it
 let DataRecorder = null;
 if (typeof process !== 'undefined' && process.versions?.node) {
@@ -101,4 +102,5 @@ export {
     RLManager,
     RLUIManager,
     RLObserver,
+    RLInputManager,
 };

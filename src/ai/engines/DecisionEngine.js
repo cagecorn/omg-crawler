@@ -2,13 +2,25 @@ import { MistakeEngine } from './MistakeEngine.js';
 import { MbtiEngine } from './MbtiEngine.js';
 
 export class DecisionEngine {
-    constructor(eventManager = null) {
+    constructor(eventManager = null, rlInputManager = null) {
         this.mbtiEngine = new MbtiEngine(eventManager);
         this.mistakeEngine = new MistakeEngine();
+        this.rlInputManager = rlInputManager;
     }
 
-    decideFinalAction(entity, context, strategy = 'AGGRESSIVE') {
+    async decideFinalAction(entity, context, strategy = 'AGGRESSIVE') {
         let baseAction = entity.ai?.decideAction(entity, context) || { type: 'idle' };
+
+        if (this.rlInputManager) {
+            try {
+                const rlAction = await this.rlInputManager.getAction(entity, context);
+                if (rlAction) {
+                    baseAction = rlAction;
+                }
+            } catch (err) {
+                console.warn('[DecisionEngine] RLInputManager error:', err);
+            }
+        }
 
         if (strategy === 'DEFENSIVE') {
             const player = context.player;

@@ -41,7 +41,7 @@ class AutoPlayerAI extends MeleeAI {
     }
 }
 
-test('차지 어택과 포션 사용 시나리오', () => {
+test('차지 어택과 포션 사용 시나리오', async () => {
     const assets = { player:{}, monster:{}, potion:{}, sword:{}, leather_armor:{}, 'violin-bow':{}, 'plate-armor':{} };
     const mapManager = new MapManager(1);
     const factory = new CharacterFactory(assets);
@@ -95,7 +95,7 @@ test('차지 어택과 포션 사용 시나리오', () => {
     aiManager.groups['player_party'] = playerGroup;
     aiManager.groups['dungeon_monsters'] = monsterGroup;
 
-    aiManager.update(context);
+    await aiManager.update(context);
 
     assert.ok(chargeUsed, '차지 어택이 발동되지 않았습니다');
     assert.ok(player.hp >= 8, '포션 사용 후 HP 값이 올바르지 않습니다');

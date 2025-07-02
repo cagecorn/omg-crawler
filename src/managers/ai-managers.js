@@ -3,6 +3,7 @@ import { SKILLS } from '../data/skills.js';
 import { WEAPON_SKILLS } from '../data/weapon-skills.js';
 import { MbtiEngine } from './ai/MbtiEngine.js';
 import { MistakeEngine } from './ai/MistakeEngine.js';
+import { RLInputManager } from './rlInputManager.js';
 import { SETTINGS } from '../../config/gameSettings.js';
 
 export const STRATEGY = {
@@ -24,10 +25,16 @@ class AIGroup {
 }
 
 export class MetaAIManager {
-    constructor(eventManager) {
+    constructor(eventManager, options = null) {
         this.groups = {};
         // 내부 엔진 생성
         this.mbtiEngine = new MbtiEngine(eventManager);
+        let rlMgr = null;
+        if (options) {
+            if (options.requestPrediction) rlMgr = options;
+            else if (options.rlManager) rlMgr = options.rlManager;
+        }
+        this.rlInputManager = rlMgr ? new RLInputManager(rlMgr) : null;
         // "몬스터 제거" 이벤트를 구독하여 그룹에서 멤버를 제거
         eventManager.subscribe('entity_removed', (data) => {
             for (const groupId in this.groups) {
@@ -216,7 +223,7 @@ export class MetaAIManager {
         eventManager.publish('action_performed', { entity, action, context });
     }
 
-    update(context) {
+    async update(context) {
         for (const groupId in this.groups) {
             const group = this.groups[groupId];
             const currentContext = {
@@ -265,8 +272,19 @@ export class MetaAIManager {
                 if (action.type === 'idle') {
                     if (member.fallbackAI) {
                         action = member.fallbackAI.decideAction(member, currentContext);
-                    } else if (member.ai && !member.roleAI) { // 이전 버전 호환성
+                    } else if (member.ai && !member.roleAI) {
                         action = member.ai.decideAction(member, currentContext);
+                    }
+                }
+
+                if (this.rlInputManager) {
+                    try {
+                        const rlAct = await this.rlInputManager.getAction(member, currentContext);
+                        if (rlAct) {
+                            action = rlAct;
+                        }
+                    } catch (err) {
+                        console.warn('[MetaAIManager] RLInput error:', err);
                     }
                 }
                 

@@ -5,7 +5,7 @@ import { describe, test, assert } from '../helpers.js';
 
 describe('AI', () => {
 
-test('공격 속도가 빠른 유닛이 먼저 공격', () => {
+test('공격 속도가 빠른 유닛이 먼저 공격', async () => {
     const em = new EventManager();
     const aiManager = new MetaAIManager(em);
     const mapManager = { tileSize: 1, isWallAt: () => false };
@@ -35,7 +35,7 @@ test('공격 속도가 빠른 유닛이 먼저 공격', () => {
     em.subscribe('entity_attack', d => order.push(d.attacker.id));
 
     const context = { player, mapManager, pathfindingManager, eventManager: em, monsterManager:{monsters:[]}, mercenaryManager:{mercenaries:[]} };
-    aiManager.update(context);
+    await aiManager.update(context);
 
     assert.strictEqual(order[0], 'fast');
 });
