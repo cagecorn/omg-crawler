@@ -78,6 +78,7 @@ export class AIArchetype {
     _filterVisibleEnemies(self, enemies) {
         const range = self.stats?.get('visionRange') ?? self.visionRange;
         return (enemies || []).filter(e =>
+            !e.isSpectator &&
             Math.hypot(e.x - self.x, e.y - self.y) < range);
     }
 
@@ -85,6 +86,7 @@ export class AIArchetype {
         let nearest = null;
         let minDist = Infinity;
         for (const e of enemies || []) {
+            if (e.isSpectator) continue;
             const d = Math.hypot(e.x - self.x, e.y - self.y);
             if (d < minDist) {
                 minDist = d;
