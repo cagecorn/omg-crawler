@@ -37,6 +37,7 @@ export class ItemAIManager {
             this._handleArtifacts(ent);
             if (nearbyEnemies.length > 0) {
                 this._handleBuffItems(ent, entities);
+                this._handleAttackItems(ent, nearbyEnemies);
             }
         }
     }
@@ -146,6 +147,20 @@ export class ItemAIManager {
 
         if (!self.effects.some(e => e.id === item.effectId)) {
             this._useItem(self, item, self);
+        }
+    }
+
+    _handleAttackItems(self, enemies) {
+        const inventory = self.consumables || self.inventory;
+        if (!Array.isArray(inventory) || inventory.length === 0) return;
+
+        const item = inventory.find(i => i.tags?.includes('attack_item'));
+        if (!item || !item.effectId) return;
+
+        const range = item.range || self.attackRange || self.visionRange;
+        const target = enemies.find(e => Math.hypot(e.x - self.x, e.y - self.y) <= range);
+        if (target) {
+            this._useItem(self, item, target);
         }
     }
 

@@ -38,7 +38,7 @@ import { ITEMS } from '../data/items.js';
 
 // Precompute lists so random selection is fast
 export const ALL_WEAPON_IDS = [
-    'short_sword', 'long_bow', 'estoc', 'axe', 'mace', 'staff',
+    'short_sword', 'long_bow', 'estoc', 'axe', 'mace', 'stun_baton', 'staff',
     'spear', 'scythe', 'whip', 'dagger', 'violin_bow'
 ];
 

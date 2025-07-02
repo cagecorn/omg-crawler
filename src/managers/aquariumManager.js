@@ -15,7 +15,7 @@ export class AquariumManager {
         this.traitManager = traitManager;
         this.features = [];
         this.equipmentManager = new EquipmentManager(eventManager);
-        this.allWeaponIds = ['short_sword', 'long_bow', 'estoc', 'axe', 'mace', 'staff', 'spear', 'scythe', 'whip', 'dagger', 'violin_bow'];
+        this.allWeaponIds = ['short_sword', 'long_bow', 'estoc', 'axe', 'mace', 'stun_baton', 'staff', 'spear', 'scythe', 'whip', 'dagger', 'violin_bow'];
         // 순환하며 각 방에 몬스터를 배치하기 위한 인덱스
         this._roomIndex = 0;
     }

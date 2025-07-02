@@ -40,4 +40,19 @@ describe('ItemAI', () => {
     assert.strictEqual(merc.equipment.weapon, null, 'weapon should not be equipped');
     assert.strictEqual(itemManager.items.length, 1, 'item should remain on ground');
   });
+
+  test('attack item used on nearby enemy', () => {
+    const factory = new CharacterFactory(assets);
+    const itemFactory = new ItemFactory(assets);
+    const eventManager = new EventManager();
+    const projectileManager = new ProjectileManager(eventManager, assets);
+    const itemAI = new ItemAIManager(eventManager, projectileManager, null, { addEffect(){} });
+    const merc = factory.create('mercenary', { x:0, y:0, tileSize:1, groupId:'g', jobId:'warrior' });
+    const enemy = factory.create('monster', { x:1, y:0, tileSize:1, groupId:'m' });
+    const grenade = itemFactory.create('shock_grenade', 0,0,1);
+    merc.consumables = [grenade];
+    const context = { player:merc, mercenaryManager:{ mercenaries:[merc] }, monsterManager:{ monsters:[enemy] } };
+    itemAI.update(context);
+    assert.strictEqual(merc.consumables.length, 0, 'grenade consumed');
+  });
 });
