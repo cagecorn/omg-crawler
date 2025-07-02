@@ -118,4 +118,16 @@ export function startAquariumLoopTest(game) {
 
     game.gameState.currentState = 'COMBAT';
     game.vfxManager.showEventText('12 vs 12 전투 시작!', 180);
+
+    const battleInfo = {
+        playerInfo: playerParty.map((p, i) => ({
+            id: game.mercenaryManager.mercenaries[i].id,
+            ...p
+        })),
+        enemyInfo: enemyParty.map((p, i) => ({
+            id: game.monsterManager.monsters[i].id,
+            ...p
+        }))
+    };
+    return battleInfo;
 }

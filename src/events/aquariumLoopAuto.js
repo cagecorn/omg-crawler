@@ -2,10 +2,15 @@
 // Runs repeated 12 vs 12 battles on the Aquarium Loop map.
 
 import { startAquariumLoopTest } from './aquariumLoopTest.js';
+import { BattleRecorder } from '../managers/battleRecorder.js';
 
 export function startAquariumBattleLoop(game, { rounds = Infinity, onRoundComplete } = {}) {
     let currentRound = 0;
     let running = false;
+
+    if (!game.battleRecorder) {
+        game.battleRecorder = new BattleRecorder(game.eventManager);
+    }
 
     const { eventManager, mercenaryManager, monsterManager, entityManager, itemManager } = game;
 
@@ -26,7 +31,8 @@ export function startAquariumBattleLoop(game, { rounds = Infinity, onRoundComple
 
     function startRound() {
         resetEntities();
-        startAquariumLoopTest(game);
+        const info = startAquariumLoopTest(game);
+        game.battleRecorder.startBattle(info.playerInfo, info.enemyInfo);
         running = true;
         currentRound++;
     }
@@ -39,10 +45,11 @@ export function startAquariumBattleLoop(game, { rounds = Infinity, onRoundComple
             running = false;
             const winner = alliesAlive.length > 0 ? 'player' : 'enemy';
             const survivors = (alliesAlive.length > 0 ? alliesAlive : enemiesAlive).length;
+            const report = game.battleRecorder.endBattle({ winner, survivors });
             if (typeof onRoundComplete === 'function') {
-                onRoundComplete({ round: currentRound, winner, survivors });
+                onRoundComplete(report);
             }
-            eventManager.publish('battle_round_complete', { round: currentRound, winner, survivors });
+            eventManager.publish('battle_round_complete', report);
             if (currentRound < rounds) {
                 // next round after small delay to avoid recursive event handling
                 setTimeout(startRound, 0);
