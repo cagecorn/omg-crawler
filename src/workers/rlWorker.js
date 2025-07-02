@@ -4,12 +4,12 @@ let tf = self.tf;
 let model = null;
 let dataset = [];
 
-async function initModel() {
+async function initModel(featLength = 3) {
     if (!tf) {
         return;
     }
     model = tf.sequential();
-    model.add(tf.layers.dense({ units: 16, inputShape: [3], activation: 'relu' }));
+    model.add(tf.layers.dense({ units: 16, inputShape: [featLength], activation: 'relu' }));
     model.add(tf.layers.dense({ units: 2, activation: 'softmax' }));
     model.compile({ optimizer: 'adam', loss: 'categoricalCrossentropy' });
 }
@@ -18,7 +18,7 @@ async function handleMessage(e) {
     const { type, data, id } = e.data;
     switch (type) {
         case 'init':
-            await initModel();
+            await initModel(data && data.featLength);
             dataset = [];
             break;
         case 'record':
