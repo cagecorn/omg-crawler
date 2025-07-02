@@ -12,6 +12,7 @@ export class RLObserver {
         this.rlManager = new RLManager(eventManager);
         this.stats = { total: 0, correct: 0, score: 0 };
         this.prediction = null;
+        this.currentRound = 0;
         this.panel = null;
         this.content = null;
         this.predictionPromise = null;
@@ -80,7 +81,8 @@ export class RLObserver {
         return grid;
     }
 
-    onRoundStart({ playerInfo, enemyInfo }) {
+    onRoundStart({ round, playerInfo, enemyInfo }) {
+        this.currentRound = round || 0;
         const features = this.buildFeatures(playerInfo, enemyInfo);
         this.predictionPromise = this.rlManager
             .predict(features)
@@ -94,7 +96,15 @@ export class RLObserver {
             .catch(() => {
                 this.prediction = Math.random() < 0.5 ? FACTIONS.PLAYER : FACTIONS.ENEMY;
             })
-            .finally(() => this.render());
+            .finally(() => {
+                if (this.eventManager) {
+                    this.eventManager.publish('rl_prediction_made', {
+                        round: this.currentRound,
+                        prediction: this.prediction,
+                    });
+                }
+                this.render();
+            });
     }
 
     onRoundComplete(report) {
@@ -104,7 +114,8 @@ export class RLObserver {
             }
             if (!this.prediction) return;
             this.stats.total++;
-            if (report.winner === this.prediction) {
+            const correct = report.winner === this.prediction;
+            if (correct) {
                 this.stats.correct++;
                 this.stats.score += 50;
             } else {
@@ -116,6 +127,16 @@ export class RLObserver {
             }
             const accuracy = this.stats.correct / this.stats.total;
             memoryDB.addEvent({ type: 'rl_accuracy', accuracy, timestamp: new Date().toISOString() });
+            if (this.eventManager) {
+                this.eventManager.publish('rl_prediction_result', {
+                    round: this.currentRound,
+                    prediction: this.prediction,
+                    actual: report.winner,
+                    correct,
+                    accuracy: accuracy * 100,
+                    score: this.stats.score,
+                });
+            }
             this.prediction = null;
             this.render();
         })();
