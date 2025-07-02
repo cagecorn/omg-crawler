@@ -32,6 +32,7 @@ export function startAquariumBattleLoop(game, { rounds = Infinity, onRoundComple
     function startRound() {
         resetEntities();
         const info = startAquariumLoopTest(game);
+        eventManager.publish('battle_round_start', { round: currentRound + 1, playerInfo: info.playerInfo, enemyInfo: info.enemyInfo });
         game.battleRecorder.startBattle(info.playerInfo, info.enemyInfo);
         running = true;
         currentRound++;
@@ -46,6 +47,7 @@ export function startAquariumBattleLoop(game, { rounds = Infinity, onRoundComple
             const winner = alliesAlive.length > 0 ? 'player' : 'enemy';
             const survivors = (alliesAlive.length > 0 ? alliesAlive : enemiesAlive).length;
             const report = game.battleRecorder.endBattle({ winner, survivors });
+            report.round = currentRound;
             if (typeof onRoundComplete === 'function') {
                 onRoundComplete(report);
             }
