@@ -19,14 +19,6 @@ export class RLManager {
         } catch (err) {
             console.warn('[RLManager] Worker init failed:', err);
         }
-
-        if (!this.eventManager) return;
-        this.eventManager.subscribe('action_performed', (data) => {
-            this._send('record', data);
-        });
-        this.eventManager.subscribe('battle_record', (data) => {
-            this._send('record', { battle: data });
-        });
     }
 
     _send(type, data) {
@@ -35,7 +27,7 @@ export class RLManager {
         }
     }
 
-    requestPrediction(features) {
+    predict(features) {
         return new Promise((resolve) => {
             if (!this.ready || !this.worker) return resolve(null);
             const id = Math.random().toString(36).slice(2);
@@ -48,6 +40,16 @@ export class RLManager {
             this.worker.addEventListener('message', handler);
             this.worker.postMessage({ type: 'predict', id, data: features });
         });
+    }
+
+    // backward compatibility
+    requestPrediction(features) {
+        return this.predict(features);
+    }
+
+    record(data) {
+        if (!this.ready || !this.worker) return;
+        this.worker.postMessage({ type: 'record', data });
     }
 
 

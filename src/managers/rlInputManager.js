@@ -19,7 +19,7 @@ export class RLInputManager {
     async getAction(entity, context) {
         if (!this.rlManager) return null;
         const features = this.buildFeatures(entity, context);
-        const prediction = await this.rlManager.requestPrediction(features);
+        const prediction = await this.rlManager.predict(features);
         return this.mapPrediction(prediction, context);
     }
 

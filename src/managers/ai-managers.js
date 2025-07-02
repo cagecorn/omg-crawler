@@ -31,7 +31,7 @@ export class MetaAIManager {
         this.mbtiEngine = new MbtiEngine(eventManager);
         let rlMgr = null;
         if (options) {
-            if (options.requestPrediction) rlMgr = options;
+            if (options.predict) rlMgr = options;
             else if (options.rlManager) rlMgr = options.rlManager;
         }
         this.rlInputManager = rlMgr ? new RLInputManager(rlMgr) : null;
