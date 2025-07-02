@@ -883,6 +883,9 @@ export class Game {
 
         // 피해량 계산 완료 이벤트를 받아 실제 피해 적용
         eventManager.subscribe('damage_calculated', (data) => {
+            if (data.attacker && data.attacker.damageDealt != null) {
+                data.attacker.damageDealt += data.damage;
+            }
             data.defender.takeDamage(data.damage);
             eventManager.publish('entity_damaged', { attacker: data.attacker, defender: data.defender, damage: data.damage });
             if (data.defender.hp <= 0) {
@@ -920,6 +923,7 @@ export class Game {
         // 죽음 이벤트가 발생하면 경험치 획득 및 애니메이션을 시작
         eventManager.subscribe('entity_death', (data) => {
             const { attacker, victim } = data;
+            if (attacker && attacker.kills != null) attacker.kills++;
 
             victim.isDying = true;
             this.vfxManager.addDeathAnimation(victim, 'explode');

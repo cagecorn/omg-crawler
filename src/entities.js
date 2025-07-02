@@ -19,6 +19,9 @@ class Entity {
         this.height = this.stats.get('sizeInTiles_h') * tileSize;
         this.hp = this.stats.get('maxHp');
         this.mp = this.stats.get('maxMp');
+        this.kills = 0;
+        this.damageDealt = 0;
+        this.damageTaken = 0;
         this.skills = [];
         this.skillCooldowns = {};
         this.attackCooldown = 0;
@@ -230,6 +233,7 @@ class Entity {
             damage -= blocked;
         }
         this.hp -= damage;
+        this.damageTaken += damage;
         if (this.hp < 0) this.hp = 0;
     }
 }

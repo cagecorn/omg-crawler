@@ -9,8 +9,8 @@ describe('RLObserver', () => {
         const mapStub = { width: 8, height: 6, tileSize: 1 };
         const observer = new RLObserver(ev, mapStub);
         await observer.init();
-        observer.rlManager.predict = async () => [0.7, 0.3];
-        observer.rlManager.record = () => {};
+        observer.predictionManager.rlManager.predict = async () => [0.7, 0.3];
+        observer.memoryManager.rlManager.record = () => {};
 
         const made = [];
         const results = [];
