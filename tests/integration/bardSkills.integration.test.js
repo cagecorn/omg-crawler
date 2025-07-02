@@ -7,7 +7,7 @@ import { SKILLS } from '../../src/data/skills.js';
 // Bard should sequentially use both hymns when available
 
 describe('Integration', () => {
-  test('bard mercenary uses guardian and courage hymns', () => {
+  test('bard mercenary uses guardian and courage hymns', async () => {
     const assets = { player:{}, mercenary:{}, monster:{} };
     const factory = new CharacterFactory(assets);
     const eventManager = new EventManager();
@@ -55,7 +55,7 @@ describe('Integration', () => {
     };
 
     // first update - expect guardian hymn
-    aiManager.update(context);
+    await aiManager.update(context);
     assert.strictEqual(actions[0].skillId, SKILLS.guardian_hymn.id, 'first action should be guardian hymn');
 
     // simulate shield effect so bard picks courage hymn next
@@ -63,7 +63,7 @@ describe('Integration', () => {
     bard.effects.push({ id: 'shield' });
 
     actions.length = 0;
-    aiManager.update(context);
+    await aiManager.update(context);
     assert.strictEqual(actions[0].skillId, SKILLS.courage_hymn.id, 'second action should be courage hymn');
   });
 });

@@ -8,7 +8,7 @@ import { HealerAI } from '../../src/ai.js';
 // 통합 테스트: 용병들이 자신의 스킬/무기 AI에 따라 행동하는지 확인
 
 describe('Integration', () => {
-  test('mercenary AIs act according to their roles and weapons', () => {
+  test('mercenary AIs act according to their roles and weapons', async () => {
     const assets = { player:{}, mercenary:{}, monster:{} };
     const factory = new CharacterFactory(assets);
     const eventManager = new EventManager();
@@ -61,7 +61,7 @@ describe('Integration', () => {
       speechBubbleManager: { addBubble(){} },
     };
 
-    aiManager.update(context);
+    await aiManager.update(context);
 
     assert.ok(actions[archer.id] && actions[archer.id].type !== 'idle', 'archer should act');
     assert.strictEqual(actions[healer.id].type, 'skill', 'healer should attempt to heal');
