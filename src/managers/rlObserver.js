@@ -2,6 +2,7 @@
 // Observes battle rounds to track TensorFlow predictions and accuracy.
 import { RLManager } from './rlManager.js';
 import { memoryDB } from '../persistence/MemoryDB.js';
+import { FACTIONS } from '../constants/factions.js';
 
 export class RLObserver {
     constructor(eventManager) {
@@ -52,9 +53,9 @@ export class RLObserver {
         const features = this.buildFeatures(playerInfo, enemyInfo);
         const res = await this.rlManager.requestPrediction(features);
         if (Array.isArray(res) && res.length >= 2) {
-            this.prediction = res[0] > res[1] ? 'player' : 'enemy';
+            this.prediction = res[0] > res[1] ? FACTIONS.PLAYER : FACTIONS.ENEMY;
         } else {
-            this.prediction = Math.random() < 0.5 ? 'player' : 'enemy';
+            this.prediction = Math.random() < 0.5 ? FACTIONS.PLAYER : FACTIONS.ENEMY;
         }
         this.render();
     }
@@ -77,8 +78,9 @@ export class RLObserver {
     render() {
         if (!this.content) return;
         const acc = this.stats.total ? ((this.stats.correct / this.stats.total) * 100).toFixed(1) : '0';
+        const pred = this.prediction ? (this.prediction === FACTIONS.ENEMY ? 'ENEMY' : this.prediction) : '-';
         this.content.innerHTML =
-            `<div>예측 승자: ${this.prediction ?? '-'}</div>` +
+            `<div>예측 승자: ${pred}</div>` +
             `<div>적중률: ${acc}%</div>` +
             `<div>잘했어요 점수: ${this.stats.score}</div>`;
     }
