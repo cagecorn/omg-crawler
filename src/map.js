@@ -357,13 +357,31 @@ export class MapManager {
         return false;
     }
 
-    render(ctxBase, ctxDecor, assets) {
+    /**
+     * Render visible map tiles.
+     * @param {CanvasRenderingContext2D} ctxBase
+     * @param {CanvasRenderingContext2D} ctxDecor
+     * @param {object} assets
+     * @param {{x:number,y:number}} [camera={x:0,y:0}]
+     * @param {number} [viewportWidth=0]
+     * @param {number} [viewportHeight=0]
+     */
+    render(ctxBase, ctxDecor, assets, camera = { x: 0, y: 0 }, viewportWidth = 0, viewportHeight = 0) {
         const wallImage = assets.wall;
         const floorImage = assets.floor;
         const lavaImage = assets.lava || floorImage;
 
-        for (let y = 0; y < this.height; y++) {
-            for (let x = 0; x < this.width; x++) {
+        const startX = Math.max(0, Math.floor(camera.x / this.tileSize));
+        const startY = Math.max(0, Math.floor(camera.y / this.tileSize));
+        const endX = viewportWidth
+            ? Math.min(this.width, Math.ceil((camera.x + viewportWidth) / this.tileSize))
+            : this.width;
+        const endY = viewportHeight
+            ? Math.min(this.height, Math.ceil((camera.y + viewportHeight) / this.tileSize))
+            : this.height;
+
+        for (let y = startY; y < endY; y++) {
+            for (let x = startX; x < endX; x++) {
                 let imageToDraw = floorImage;
                 if (this.map[y][x] === this.tileTypes.WALL) {
                     imageToDraw = wallImage;
