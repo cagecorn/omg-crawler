@@ -292,8 +292,11 @@ export class ItemFactory {
             item.sockets = [];
         }
 
-        if (Math.random() < 0.5) this._applyAffix(item, PREFIXES, 'prefix');
-        if (Math.random() < 0.5) this._applyAffix(item, SUFFIXES, 'suffix');
+        const isAttackItem = item.tags.includes('attack_item');
+        if (!isAttackItem) {
+            if (Math.random() < 0.5) this._applyAffix(item, PREFIXES, 'prefix');
+            if (Math.random() < 0.5) this._applyAffix(item, SUFFIXES, 'suffix');
+        }
 
         if (baseItem.possessionAI) {
             item.possessionAI = baseItem.possessionAI;
