@@ -42,13 +42,12 @@ export class ProjectileManager {
         }
     }
 
-    throwItem(caster, target, item, damage = 0, itemManager = null, onHit = null) {
+    throwItem(caster, target, item, damage = 0, itemManager = null) {
         const config = {
             x: caster.x + caster.width / 2,
             y: caster.y + caster.height / 2,
             target,
             caster,
-            isFriendly: caster.isFriendly,
             damage,
             knockbackStrength: 0,
             image: item.image,
@@ -61,7 +60,6 @@ export class ProjectileManager {
         const projectile = new Projectile(config);
         projectile.droppedItem = item;
         projectile.itemManager = itemManager;
-        projectile.onHit = onHit;
         this.projectiles.push(projectile);
     }
 
@@ -77,7 +75,6 @@ export class ProjectileManager {
             if (result.collided) {
                 this.eventManager.publish('entity_attack', {
                     attacker: proj.caster,
-                    projectile: proj,
                     defender: result.target,
                     damage: proj.damage,
                 });
@@ -103,14 +100,9 @@ export class ProjectileManager {
                     for (const aoeTarget of aoeTargets) {
                         if (aoeTarget.isFriendly !== proj.caster.isFriendly) {
                             this.eventManager.publish('log', { message: `[음파 화살]이 ${aoeTarget.constructor.name}에게 피해를 입힙니다!`, color: '#add8e6' });
-                            this.eventManager.publish('entity_attack', { attacker: proj.caster, projectile: proj, defender: aoeTarget, damage: proj.damage * 0.5 });
+                            this.eventManager.publish('entity_attack', { attacker: proj.caster, defender: aoeTarget, damage: proj.damage * 0.5 });
                         }
                     }
-                }
-
-
-                if (typeof proj.onHit === 'function') {
-                    try { proj.onHit(proj, result.target); } catch (err) { console.warn('[ProjectileManager] onHit error', err); }
                 }
 
                 if (proj.droppedItem && proj.itemManager) {
