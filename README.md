@@ -24,6 +24,7 @@
 * **평판 시스템 토글:** `config/gameSettings.js`의 `ENABLE_REPUTATION_SYSTEM` 값을 false로 설정하면 평판 기록과 모델 로드를 생략하여 성능을 높일 수 있습니다.
 * **실시간 학습 매니저:** `RLManager`가 전투 로그를 Web Worker로 전송해 TensorFlow 모델을 실시간으로 학습하며 예측 기능을 제공합니다.
 * **TensorFlow 입력 매니저:** `RLInputManager`가 학습된 모델의 예측을 받아 AI의 행동 결정에 반영합니다.
+* **승자 예측 & MVP 표기:** 수족관 루프 전투마다 TensorFlow가 승자를 예측하고, 가장 활약한 유닛과 부진한 유닛을 UI에 표시합니다.
 
 ## 개발 원칙
 

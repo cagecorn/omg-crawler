@@ -35,7 +35,11 @@ export function startAquariumBattleLoop(game, { rounds = Infinity, onRoundComple
         resetEntities();
         const info = startAquariumLoopTest(game);
         eventManager.publish('battle_round_start', { round: currentRound + 1, playerInfo: info.playerInfo, enemyInfo: info.enemyInfo });
-        game.battleRecorder.startBattle(info.playerInfo, info.enemyInfo);
+        // Pass actual entity instances so damage와 kill 기록이 반영됩니다.
+        game.battleRecorder.startBattle(
+            mercenaryManager.mercenaries,
+            monsterManager.monsters
+        );
         running = true;
         currentRound++;
     }

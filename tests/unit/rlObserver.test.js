@@ -17,9 +17,18 @@ describe('RLObserver', () => {
         ev.subscribe('rl_prediction_made', (d) => made.push(d));
         ev.subscribe('rl_prediction_result', (d) => results.push(d));
 
-        ev.publish('battle_round_start', { round: 1, playerInfo: [{}], enemyInfo: [{}] });
+        ev.publish('battle_round_start', { round: 1, playerInfo: [{ id: 1, name: 'A' }], enemyInfo: [{ id: 2, name: 'B' }] });
         await observer.predictionPromise;
-        ev.publish('battle_round_complete', { round: 1, winner: FACTIONS.PLAYER, playerUnits: [{}], enemyUnits: [{}] });
+        ev.publish('battle_round_complete', {
+            round: 1,
+            winner: FACTIONS.PLAYER,
+            playerUnits: [{ id: 1, name: 'A' }],
+            enemyUnits: [{ id: 2, name: 'B' }],
+            bestUnitId: 1,
+            worstUnitId: 2,
+            bestReason: 'x',
+            worstReason: 'y'
+        });
         await observer.roundCompletePromise;
 
         assert.strictEqual(observer.stats.correct, 1);
@@ -28,5 +37,7 @@ describe('RLObserver', () => {
         assert.strictEqual(made.length, 1);
         assert.strictEqual(results.length, 1);
         assert.strictEqual(results[0].correct, true);
+        assert.strictEqual(results[0].bestName, 'A');
+        assert.strictEqual(results[0].worstName, 'B');
     });
 });

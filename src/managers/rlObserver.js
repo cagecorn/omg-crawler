@@ -30,6 +30,8 @@ export class RLObserver {
         this.lastAction = null;
         this.currentPlayerUnits = null;
         this.currentEnemyUnits = null;
+        this.bestLabel = null;
+        this.worstLabel = null;
     }
 
     async init() {
@@ -118,6 +120,18 @@ export class RLObserver {
             const accuracy = this.stats.correct / this.stats.total;
             memoryDB.addEvent({ type: 'rl_accuracy', accuracy, timestamp: new Date().toISOString() });
             if (this.eventManager) {
+                const allUnits = [
+                    ...(report.playerUnits || []),
+                    ...(report.enemyUnits || [])
+                ];
+                const findLabel = (id) => {
+                    const u = allUnits.find(x => x.id === id);
+                    return u ? u.name || u.job || id : id;
+                };
+                const bestName = report.bestUnitId != null ? findLabel(report.bestUnitId) : null;
+                const worstName = report.worstUnitId != null ? findLabel(report.worstUnitId) : null;
+                this.bestLabel = bestName;
+                this.worstLabel = worstName;
                 this.eventManager.publish('rl_prediction_result', {
                     round: this.currentRound,
                     prediction: this.prediction,
@@ -125,6 +139,10 @@ export class RLObserver {
                     correct,
                     accuracy: accuracy * 100,
                     score: this.stats.score,
+                    bestUnitId: report.bestUnitId,
+                    worstUnitId: report.worstUnitId,
+                    bestName,
+                    worstName
                 });
             }
             this.prediction = null;
@@ -169,7 +187,9 @@ export class RLObserver {
         this.content.innerHTML =
             `<div>예측 승자: ${pred}</div>` +
             `<div>적중률: ${acc}%</div>` +
-            `<div>잘했어요 점수: ${this.stats.score}</div>`;
+            `<div>잘했어요 점수: ${this.stats.score}</div>` +
+            (this.bestLabel ? `<div>최고 유닛: ${this.bestLabel}</div>` : '') +
+            (this.worstLabel ? `<div>최저 유닛: ${this.worstLabel}</div>` : '');
     }
 }
 
