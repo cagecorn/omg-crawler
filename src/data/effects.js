@@ -195,7 +195,9 @@ export const EFFECTS = {
         damagePerTurn: 4,
         tags: ['status_ailment', 'shock', 'dot', 'cc'],
         overlayColor: 'rgba(230, 230, 50, 0.4)',
-        particle: { type: 'electric', color: '#00aaff' }
+        // FPS 저하 버그로 인해 감전 효과의 파티클을 비활성화합니다.
+        // 기존 설정: { type: 'electric', color: '#00aaff' }
+        particle: null
     },
     burn: {
         name: '화상',
