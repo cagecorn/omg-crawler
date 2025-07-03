@@ -2,13 +2,12 @@ import { Projectile } from "../entities.js";
 import { findEntitiesInRadius } from '../utils/entityUtils.js';
 
 export class ProjectileManager {
-    constructor(eventManager, assets, vfxManager = null, knockbackEngine = null, effectManager = null) {
+    constructor(eventManager, assets, vfxManager = null, knockbackEngine = null) {
         this.projectiles = [];
         this.eventManager = eventManager;
         this.assets = assets;
         this.vfxManager = vfxManager;
         this.knockbackEngine = knockbackEngine;
-        this.effectManager = effectManager;
         console.log("[ProjectileManager] Initialized");
     }
 
@@ -59,11 +58,8 @@ export class ProjectileManager {
             vfxManager: this.vfxManager,
         };
         const projectile = new Projectile(config);
-        projectile.droppedItem = item.applyOnImpact ? null : item;
+        projectile.droppedItem = item;
         projectile.itemManager = itemManager;
-        projectile.itemEffectId = item.effectId;
-        projectile.itemAoeRadius = item.aoeRadius;
-        projectile.applyOnImpact = item.applyOnImpact;
         this.projectiles.push(projectile);
     }
 
@@ -106,27 +102,6 @@ export class ProjectileManager {
                             this.eventManager.publish('log', { message: `[음파 화살]이 ${aoeTarget.constructor.name}에게 피해를 입힙니다!`, color: '#add8e6' });
                             this.eventManager.publish('entity_attack', { attacker: proj.caster, defender: aoeTarget, damage: proj.damage * 0.5 });
                         }
-                    }
-                }
-
-                if (proj.applyOnImpact && this.effectManager && proj.itemEffectId) {
-                    const centerX = result.target.x + result.target.width / 2;
-                    const centerY = result.target.y + result.target.height / 2;
-                    if (proj.itemAoeRadius && allEntities.length > 0) {
-                        const aoeTargets = findEntitiesInRadius(centerX, centerY, proj.itemAoeRadius, allEntities);
-                        for (const aoeTarget of aoeTargets) {
-                            if (aoeTarget.isFriendly !== proj.caster.isFriendly) {
-                                this.effectManager.addEffect(aoeTarget, proj.itemEffectId, proj.caster);
-                            }
-                        }
-                        if (this.vfxManager) {
-                            this.vfxManager.createNovaEffect({ x: centerX, y: centerY, width: 0, height: 0 }, {
-                                radius: proj.itemAoeRadius,
-                                image: 'shock-wave'
-                            });
-                        }
-                    } else {
-                        this.effectManager.addEffect(result.target, proj.itemEffectId, proj.caster);
                     }
                 }
 

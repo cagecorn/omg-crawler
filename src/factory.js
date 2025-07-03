@@ -283,7 +283,6 @@ export class ItemFactory {
         if (baseItem.healAmount) item.healAmount = baseItem.healAmount;
         if (baseItem.effectId) item.effectId = baseItem.effectId;
         if (baseItem.aoeRadius) item.aoeRadius = baseItem.aoeRadius;
-        if (baseItem.applyOnImpact) item.applyOnImpact = baseItem.applyOnImpact;
 
         if (item.type === 'weapon' || item.type === 'armor') {
             const numSockets = Math.floor(Math.random() * 4); // 0~3개 소켓

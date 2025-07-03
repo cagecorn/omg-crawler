@@ -369,8 +369,7 @@ export const ITEMS = {
         tags: ['consumable', 'attack_item'],
         imageKey: 'shock-grenade',
         effectId: 'shock',
-        aoeRadius: 128,
-        applyOnImpact: true
+        aoeRadius: 128
     },
 
     // --- 룬 아이템 ---
