@@ -1,4 +1,5 @@
 import { CombatDecisionEngine } from './ai/CombatDecisionEngine.js';
+import { findEntitiesInRadius } from '../utils/entityUtils.js';
 
 export class ItemAIManager {
     constructor(eventManager = null, projectileManager = null, vfxManager = null, effectManager = null) {
@@ -21,23 +22,16 @@ export class ItemAIManager {
             ...(monsterManager?.monsters || [])
         ]));
 
-        let allEnemies = [];
-        if (context.metaAIManager) {
-            allEnemies = Object.values(context.metaAIManager.groups)
-                .filter(g => g.id !== player.groupId)
-                .flatMap(g => g.members);
-        } else if (context.enemies) {
-            allEnemies = context.enemies;
-        }
-
         for (const ent of entities) {
-            const nearbyEnemies = allEnemies.filter(e => Math.hypot(e.x - ent.x, e.y - ent.y) < ent.visionRange);
+            const nearbyEnemies = entities.filter(e =>
+                e !== ent && e.isFriendly !== ent.isFriendly &&
+                Math.hypot(e.x - ent.x, e.y - ent.y) < ent.visionRange);
 
             this._handleHealingItems(ent, entities);
             this._handleArtifacts(ent);
             if (nearbyEnemies.length > 0) {
                 this._handleBuffItems(ent, entities);
-                this._handleAttackItems(ent, nearbyEnemies);
+                this._handleAttackItems(ent, nearbyEnemies, entities);
             }
         }
     }
@@ -150,7 +144,7 @@ export class ItemAIManager {
         }
     }
 
-    _handleAttackItems(self, enemies) {
+    _handleAttackItems(self, enemies, allEntities) {
         const inventory = self.consumables || self.inventory;
         if (!Array.isArray(inventory) || inventory.length === 0) return;
 
@@ -160,12 +154,12 @@ export class ItemAIManager {
         const range = item.range || self.attackRange || self.visionRange;
         const target = enemies.find(e => Math.hypot(e.x - self.x, e.y - self.y) <= range);
         if (target) {
-            this._useItem(self, item, target);
+            this._useItem(self, item, target, allEntities);
         }
     }
 
 
-    _useItem(user, item, target) {
+    _useItem(user, item, target, allEntities = []) {
         if (!item || (item.quantity && item.quantity <= 0)) return;
 
         if (item.healAmount) {
@@ -174,7 +168,24 @@ export class ItemAIManager {
         }
 
         if (item.effectId && this.effectManager) {
-            this.effectManager.addEffect(target, item.effectId);
+            if (item.aoeRadius && allEntities.length > 0) {
+                const centerX = target.x + target.width / 2;
+                const centerY = target.y + target.height / 2;
+                const aoeTargets = findEntitiesInRadius(centerX, centerY, item.aoeRadius, allEntities);
+                for (const aoeT of aoeTargets) {
+                    if (aoeT.isFriendly !== user.isFriendly) {
+                        this.effectManager.addEffect(aoeT, item.effectId);
+                    }
+                }
+                if (this.vfxManager) {
+                    this.vfxManager.createNovaEffect({ x: centerX, y: centerY, width: 0, height: 0 }, {
+                        radius: item.aoeRadius,
+                        image: 'shock-wave'
+                    });
+                }
+            } else {
+                this.effectManager.addEffect(target, item.effectId);
+            }
         }
 
         if (this.vfxManager) {

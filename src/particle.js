@@ -3,6 +3,7 @@ export class Particle {
         this.x = x;
         this.y = y;
         this.color = color;
+        this.type = options.type || null;
 
         this.text = options.text || null;
 
@@ -18,6 +19,11 @@ export class Particle {
 
         this.homingTarget = options.homingTarget || null;
         this.homingStrength = options.homingStrength !== undefined ? options.homingStrength : 0.05;
+
+        if (this.type === 'electric') {
+            this.wobble = Math.random() * Math.PI * 2;
+            this.wobbleSpeed = 0.5 + Math.random() * 0.5;
+        }
     }
 
     update() {
@@ -34,6 +40,14 @@ export class Particle {
         this.vy += this.gravity;
         this.x += this.vx;
         this.y += this.vy;
+
+        if (this.type === 'electric') {
+            this.wobble += this.wobbleSpeed;
+            this.x += Math.sin(this.wobble) * 0.5;
+            this.y += Math.cos(this.wobble) * 0.5;
+            this.vx *= 0.98;
+            this.vy *= 0.98;
+        }
     }
 
     render(ctx) {
@@ -45,6 +59,13 @@ export class Particle {
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(this.text, this.x, this.y);
+        } else if (this.type === 'electric') {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fillStyle = this.color;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = this.color;
+            ctx.fill();
         } else {
             ctx.fillStyle = this.color;
             ctx.fillRect(this.x, this.y, this.size, this.size);

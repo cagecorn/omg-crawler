@@ -59,6 +59,7 @@ export class AssetLoader {
     loadVfxImages() {
         const effects = [
             ['fire-nova-effect', 'assets/images/fire-nova-effect.png'],
+            ['shock-wave', 'assets/images/shock-wave.png'],
         ];
         effects.forEach(([key, src]) => this.loadImage(key, src));
     }

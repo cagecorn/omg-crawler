@@ -191,11 +191,11 @@ export const EFFECTS = {
     shock: {
         name: '감전',
         type: 'dot',
-        duration: 300,
+        duration: 120,
         damagePerTurn: 4,
-        tags: ['status_ailment', 'shock', 'dot'],
+        tags: ['status_ailment', 'shock', 'dot', 'cc'],
         overlayColor: 'rgba(230, 230, 50, 0.4)',
-        particle: { type: 'electric', color: 'yellow' }
+        particle: { type: 'electric', color: '#00aaff' }
     },
     burn: {
         name: '화상',
