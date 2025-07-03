@@ -162,28 +162,6 @@ export class ItemAIManager {
     _useItem(user, item, target, allEntities = []) {
         if (!item || (item.quantity && item.quantity <= 0)) return;
 
-        const onHit = () => this._applyItemHitEffects(user, item, target, allEntities);
-
-        if (this.projectileManager && user !== target) {
-            this.projectileManager.throwItem(user, target, item, 0, null, onHit);
-        } else {
-            onHit();
-        }
-
-        if (item.quantity > 1) {
-            item.quantity -= 1;
-        } else {
-            const inv = user.consumables || user.inventory;
-            const idx = inv.indexOf(item);
-            if (idx >= 0) inv.splice(idx, 1);
-        }
-
-        if (this.eventManager) {
-            this.eventManager.publish('log', { message: `${user.constructor.name} uses ${item.name}` });
-        }
-    }
-
-    _applyItemHitEffects(user, item, target, allEntities = []) {
         if (item.healAmount) {
             const heal = item.healAmount;
             target.hp = Math.min(target.maxHp, target.hp + heal);
@@ -213,6 +191,22 @@ export class ItemAIManager {
         if (this.vfxManager) {
             const scale = (item.type === 'artifact' || item.tags?.includes('artifact')) ? 0.33 : 1;
             this.vfxManager.addItemUseEffect(target, item.image, { scale });
+        }
+
+        if (this.projectileManager && user !== target) {
+            this.projectileManager.throwItem(user, target, item);
+        }
+
+        if (item.quantity > 1) {
+            item.quantity -= 1;
+        } else {
+            const inv = user.consumables || user.inventory;
+            const idx = inv.indexOf(item);
+            if (idx >= 0) inv.splice(idx, 1);
+        }
+
+        if (this.eventManager) {
+            this.eventManager.publish('log', { message: `${user.constructor.name} uses ${item.name}` });
         }
     }
 }
