@@ -23,12 +23,15 @@ export class RLUIManager {
         this.historyEl.prepend(div);
     }
 
-    update({ round, prediction, actual, correct, accuracy, score }) {
+    update({ round, prediction, actual, correct, accuracy, score, bestName, worstName }) {
         if (!this.panel) return;
         this.accuracyEl.textContent = `적중률: ${accuracy.toFixed(1)}%`;
         this.scoreEl.textContent = `잘했어요 점수: ${score}`;
         const div = document.createElement('div');
-        div.textContent = `라운드 ${round} 결과: ${prediction}→${actual} ${correct ? '✅' : '❌'}`;
+        let text = `라운드 ${round} 결과: ${prediction}→${actual} ${correct ? '✅' : '❌'}`;
+        if (bestName) text += ` | ⭐ ${bestName}`;
+        if (worstName) text += ` | 😞 ${worstName}`;
+        div.textContent = text;
         this.historyEl.prepend(div);
     }
 }
