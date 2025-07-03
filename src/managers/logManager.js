@@ -30,12 +30,26 @@ export class CombatLogManager {
         eventManager.subscribe('level_up', (data) => {
             this.add(`%c레벨 업! LV ${data.level} 달성!`);
         });
+
+        /**
+         * 다음 애니메이션 프레임에 렌더를 한번만 수행하기 위한 플래그.
+         * 빈번한 DOM 업데이트는 프레임 드랍의 원인이 되므로, 여러 로그가
+         * 한 프레임 안에 추가되더라도 렌더 호출은 최대 한 번으로 제한한다.
+         * @type {boolean}
+         */
+        this._renderScheduled = false;
     }
 
     add(message, type = 'combat', details = null) {
         this.logs.push({ message, type, details });
         if (this.logs.length > 20) this.logs.shift();
-        this.render();
+        if (!this._renderScheduled) {
+            this._renderScheduled = true;
+            requestAnimationFrame(() => {
+                this.render();
+                this._renderScheduled = false;
+            });
+        }
     }
 
     render() {
