@@ -1638,16 +1638,7 @@ export class Game {
 
         const contexts = layerManager.contexts;
 
-        const viewportWidth = canvas.width / zoom;
-        const viewportHeight = canvas.height / zoom;
-        mapManager.render(
-            contexts.mapBase,
-            contexts.mapDecor,
-            assets,
-            camera,
-            viewportWidth,
-            viewportHeight
-        );
+        mapManager.render(contexts.mapBase, contexts.mapDecor, assets);
         this.laneRenderManager.render(contexts.mapDecor);
         itemManager.render(contexts.mapDecor);
 
