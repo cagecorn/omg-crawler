@@ -58,16 +58,9 @@ export class InputHandler {
         }
         // 조건 2: 그 외의 모든 경우 -> 카메라 확대/축소
         else {
-            // 이 부분이 이전에 누락되었던 카메라 줌 로직입니다.
-            // this.game.camera 객체가 있다고 가정합니다. 실제 구조에 맞게 수정이 필요할 수 있습니다.
-            if (this.game.camera) {
-                const zoomIntensity = 0.05; // 줌 강도 조절
-                if (e.deltaY < 0) {
-                    this.game.camera.zoomIn(zoomIntensity);
-                } else {
-                    this.game.camera.zoomOut(zoomIntensity);
-                }
-            }
+            // 기존 게임 로직과 호환되도록 이벤트 매니저에 휠 정보를 전달한다.
+            // game.js에서는 'mouse_wheel' 이벤트를 구독하여 zoomLevel을 조절한다.
+            this.game.eventManager?.publish('mouse_wheel', { direction: e.deltaY });
         }
     }
 }

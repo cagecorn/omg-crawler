@@ -145,6 +145,7 @@ export class UIManager {
                 } else {
                     this.characterSheetPanel.classList.add('hidden');
                     this.currentCharacterId = null;
+                    if (this.gameState) this.gameState.isPaused = false;
                 }
             }
         });
@@ -694,6 +695,10 @@ export class UIManager {
             panel.remove();
             this.openCharacterSheets.delete(entityId);
         }
+        // 모든 캐릭터 시트가 닫히면 게임을 재개한다.
+        if (this.openCharacterSheets.size === 0 && this.gameState) {
+            this.gameState.isPaused = false;
+        }
     }
 
     // 특정 캐릭터의 장비창을 표시하는 중앙 함수
@@ -709,6 +714,7 @@ export class UIManager {
                 closeBtn.onclick = () => {
                     this.characterSheetPanel.classList.add('hidden');
                     this.currentCharacterId = null;
+                    if (this.gameState) this.gameState.isPaused = false;
                 };
             }
         }
