@@ -33,8 +33,4 @@ export const SETTINGS = {
     GUIDELINE_REPO_URL: "cagecorn/doom-crawler-newest/contents/TensorFlow%27s%20room?ref=main",
     // 이동 속도는 StatManager의 'movement' 스탯으로부터 파생됩니다.
     // ... 나중에 더 많은 설정 추가
-
-    // 디버그 로그 출력 여부를 제어합니다. 로그가 많을 경우 프레임 저하가
-    // 발생할 수 있으므로 기본값을 false로 둡니다.
-    ENABLE_DEBUG_LOGS: false
 };

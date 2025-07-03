@@ -1462,9 +1462,7 @@ export class Game {
         if (this.auraManager) {
             this.auraManager.update(allEntities);
         }
-        if (SETTINGS.ENABLE_DEBUG_LOGS) {
-            eventManager.publish('debug', { tag: 'Frame', message: '--- Frame Update Start ---' });
-        }
+        eventManager.publish('debug', { tag: 'Frame', message: '--- Frame Update Start ---' });
         const player = gameState.player;
         if (player.attackCooldown > 0) player.attackCooldown--;
         let moveX = 0, moveY = 0;
@@ -1573,9 +1571,7 @@ export class Game {
             ...this.monsterManager.monsters.flatMap(m => m.consumables || []),
         ];
         this.microEngine.update(allItems);
-        if (SETTINGS.ENABLE_DEBUG_LOGS) {
-            eventManager.publish('debug', { tag: 'Frame', message: '--- Frame Update End ---' });
-        }
+        eventManager.publish('debug', { tag: 'Frame', message: '--- Frame Update End ---' });
     }
 
     render = () => {
