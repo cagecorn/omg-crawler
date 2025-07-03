@@ -279,8 +279,7 @@ export class Game {
             this.eventManager,
             assets,
             this.vfxManager,
-            this.knockbackEngine,
-            this.effectManager
+            this.knockbackEngine
         );
         this.managers.ProjectileManager = this.projectileManager;
         this.itemAIManager = new Managers.ItemAIManager(
