@@ -64,6 +64,97 @@ export class MetaAIManager {
         }
     }
 
+    /**
+     * 양 측면에서 적을 포위하는 집게 기동을 실행합니다.
+     */
+    executePincerManeuver() {
+        const enemyUnits = this.groups['enemy']?.members || [];
+        if (enemyUnits.length === 0) return;
+        const target = this.getCenterOfMass(enemyUnits);
+        const units = this.groups['player']?.members || [];
+        const mid = Math.ceil(units.length / 2);
+        const left = units.slice(0, mid);
+        const right = units.slice(mid);
+        this.moveGroupTo(left, { x: target.x - 150, y: target.y });
+        this.moveGroupTo(right, { x: target.x + 150, y: target.y });
+    }
+
+    /**
+     * 방패벽 대형을 형성합니다. 방패 유닛이 전방에서 적의 공격을 막습니다.
+     */
+    formShieldWall() {
+        const units = this.groups['player']?.members || [];
+        const shield = units.filter(u => u.hasShield && u.hasShield());
+        const ranged = units.filter(u => u.isRanged && u.isRanged());
+        const others = units.filter(u => !shield.includes(u) && !ranged.includes(u));
+        const enemyCenter = this.getCenterOfMass(this.groups['enemy']?.members || []);
+        this.formLine(shield, enemyCenter, 0);
+        this.formLine(others, enemyCenter, -50);
+        this.formLine(ranged, enemyCenter, -100);
+    }
+
+    /**
+     * 가장 약한 적을 찾아 모든 유닛이 집중 공격하게 합니다.
+     */
+    focusFireWeakest() {
+        const allies = this.groups['player']?.members || [];
+        const enemies = this.groups['enemy']?.members || [];
+        if (enemies.length === 0) return;
+        let target = enemies[0];
+        for (const e of enemies) {
+            if (e.getHealth && e.getHealth() < target.getHealth()) target = e;
+        }
+        allies.forEach(u => u.setTarget && u.setTarget(target));
+    }
+
+    /** Helper: 그룹을 특정 위치로 이동시킵니다. */
+    moveGroupTo(units, pos) {
+        units.forEach(u => {
+            if (u.ai && u.ai.setGoal) {
+                u.ai.setGoal('MOVE', { target: pos });
+            } else {
+                u.x = pos.x;
+                u.y = pos.y;
+            }
+        });
+    }
+
+    /** Helper: 주어진 방향으로 일렬 대형을 만듭니다. */
+    formLine(units, faceTowards, offset = 0) {
+        units.forEach((u, idx) => {
+            const spacing = 20;
+            const px = faceTowards.x + (idx - units.length / 2) * spacing;
+            const py = faceTowards.y + offset;
+            this.moveGroupTo([u], { x: px, y: py });
+        });
+    }
+
+    /** Helper: 유닛들의 중심 좌표를 계산합니다. */
+    getCenterOfMass(units) {
+        if (!units.length) return { x: 0, y: 0 };
+        const sum = units.reduce((acc, u) => ({ x: acc.x + u.x, y: acc.y + u.y }), { x: 0, y: 0 });
+        return { x: sum.x / units.length, y: sum.y / units.length };
+    }
+
+    /**
+     * AI 모델이 선택한 인덱스에 따라 전술을 실행합니다.
+     */
+    executeActionByIndex(index) {
+        switch (index) {
+            case 0:
+                this.executePincerManeuver();
+                break;
+            case 1:
+                this.formShieldWall();
+                break;
+            case 2:
+                this.focusFireWeakest();
+                break;
+            default:
+                break;
+        }
+    }
+
     async predictBattleOutcome(playerUnits, enemyUnits) {
         if (!this.rlInputManager) return null;
         const unitsA = serializeUnits(playerUnits);

@@ -7,6 +7,7 @@ export class RLManager {
         this.eventManager = eventManager;
         this.worker = null;
         this.ready = false;
+        this.lastActionIndex = null;
     }
 
     async init(featLength = 3) {
@@ -40,6 +41,15 @@ export class RLManager {
             this.worker.addEventListener('message', handler);
             this.worker.postMessage({ type: 'predict', id, data: features });
         });
+    }
+
+    recordExperience(exp) {
+        if (!this.ready || !this.worker) return;
+        this.worker.postMessage({ type: 'train', experience: exp });
+    }
+
+    getLastAction() {
+        return this.lastActionIndex;
     }
 
     // backward compatibility
