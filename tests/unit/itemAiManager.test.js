@@ -11,7 +11,7 @@ describe('ItemAI', () => {
     const factory = new CharacterFactory(assets);
     const itemFactory = new ItemFactory(assets);
     const eventManager = new EventManager();
-    const projectileManager = new ProjectileManager(eventManager, assets);
+    const projectileManager = new ProjectileManager(eventManager, assets, null, null, { addEffect(){} });
     const itemAI = new ItemAIManager(eventManager, projectileManager, null, { addEffect(){} });
     const merc = factory.create('mercenary', { x:0, y:0, tileSize:1, groupId:'g', jobId:'warrior' });
     merc.consumables = [];
@@ -29,7 +29,7 @@ describe('ItemAI', () => {
     const factory = new CharacterFactory(assets);
     const itemFactory = new ItemFactory(assets);
     const eventManager = new EventManager();
-    const projectileManager = new ProjectileManager(eventManager, assets);
+    const projectileManager = new ProjectileManager(eventManager, assets, null, null, { addEffect(){} });
     const itemAI = new ItemAIManager(eventManager, projectileManager, null, { addEffect(){} });
     const merc = factory.create('mercenary', { x:0, y:0, tileSize:1, groupId:'g', jobId:'warrior' });
     merc.equipment.weapon = null;
@@ -45,7 +45,7 @@ describe('ItemAI', () => {
     const factory = new CharacterFactory(assets);
     const itemFactory = new ItemFactory(assets);
     const eventManager = new EventManager();
-    const projectileManager = new ProjectileManager(eventManager, assets);
+    const projectileManager = new ProjectileManager(eventManager, assets, null, null, { addEffect(){} });
     const itemAI = new ItemAIManager(eventManager, projectileManager, null, { addEffect(){} });
     const merc = factory.create('mercenary', { x:0, y:0, tileSize:1, groupId:'g', jobId:'warrior' });
     const enemy = factory.create('monster', { x:1, y:0, tileSize:1, groupId:'m' });
@@ -53,6 +53,7 @@ describe('ItemAI', () => {
     merc.consumables = [grenade];
     const context = { player:merc, mercenaryManager:{ mercenaries:[merc] }, monsterManager:{ monsters:[enemy] } };
     itemAI.update(context);
+    projectileManager.update([enemy]);
     assert.strictEqual(merc.consumables.length, 0, 'grenade consumed');
   });
 
@@ -74,8 +75,9 @@ describe('ItemAI', () => {
     const factory = new CharacterFactory(assets);
     const itemFactory = new ItemFactory(assets);
     const calls = [];
-    const itemAI = new ItemAIManager();
-    itemAI.setEffectManager({ addEffect:(t)=>calls.push(t) });
+    const eventManager = new EventManager();
+    const projectileManager = new ProjectileManager(eventManager, assets, null, null, { addEffect:(t)=>calls.push(t) });
+    const itemAI = new ItemAIManager(eventManager, projectileManager, null, { addEffect:(t)=>calls.push(t) });
     const merc = factory.create('mercenary', { x:0, y:0, tileSize:1, groupId:'g', jobId:'warrior' });
     const e1 = factory.create('monster', { x:1, y:0, tileSize:1, groupId:'m' });
     const e2 = factory.create('monster', { x:2, y:0, tileSize:1, groupId:'m' });
@@ -83,6 +85,7 @@ describe('ItemAI', () => {
     merc.consumables = [grenade];
     const context = { player:merc, mercenaryManager:{mercenaries:[merc]}, monsterManager:{monsters:[e1,e2]} };
     itemAI.update(context);
+    projectileManager.update([e1, e2]);
     assert.strictEqual(calls.length, 2, 'both enemies affected');
     assert.strictEqual(merc.consumables.length, 0, 'grenade consumed');
   });
