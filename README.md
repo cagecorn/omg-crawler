@@ -105,6 +105,11 @@ await recorder.init();
 
 기본 포맷은 JSONL이며 `training.jsonl` 파일에 누적 기록됩니다.
 
+## 로그 및 데이터 저장 위치
+AI 학습이나 전투 예측에 활용되는 모든 로그 파일은 저장소 루트의 `logs/` 디렉터리에 보관합니다.
+`DataRecorder`의 출력(`training.jsonl`), `RLManager`가 생성한 `rl-dataset.json`,
+그리고 배틀 예측 결과 파일 등은 모두 이 폴더에 모아 두어 정리된 구조를 유지하세요.
+
 ## Guideline Loader
 게임 시작 시 `GuidelineLoader`가 지정한 GitHub 경로에서 Markdown 가이드를 읽어
 JSON 형식으로 변환합니다. 설정 파일 `config/gameSettings.js`의 `GUIDELINE_REPO_URL`
