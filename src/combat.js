@@ -100,8 +100,9 @@ export class CombatCalculator {
         const weapon = attacker.equipment?.weapon;
         if (weapon?.tags?.includes('magic_weapon')) {
             const intBonus = attacker.stats?.get('intelligence') || 0;
-            // 마법 무기는 지능의 절반을 추가 피해로 적용한다
-            details.base += Math.floor(intBonus / 2);
+            // 전투 템포를 늦추기 위해 지능 보너스를 완화한다
+            // 기존: 지능의 절반을 추가 피해로 적용
+            details.base += Math.floor(intBonus / 4);
         }
         finalDamage += details.base;
 

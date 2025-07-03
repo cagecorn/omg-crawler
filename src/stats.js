@@ -33,9 +33,10 @@ export class StatManager {
             visionRange: config.visionRange || 192 * 4,
             attackRange: config.attackRange || 192,
             carryCapacity: config.carryCapacity || 30,
-            // 지나치게 빠른 전투 템포를 완화하기 위해 기본 시전/공격 속도를 하향한다
-            castingSpeed: config.castingSpeed || 0.5,
-            attackSpeed: config.attackSpeed || 0.5,
+            // 지나치게 빠른 전투 템포를 완화하기 위해 기본 시전/공격 속도를 대폭 낮춘다
+            // 수족관 루프 맵의 1레벨 전투가 지나치게 짧게 끝나는 문제를 해결하기 위함
+            castingSpeed: config.castingSpeed || 0.3,
+            attackSpeed: config.attackSpeed || 0.3,
             hpRegen: config.hpRegen || 0,
             mpRegen: config.mpRegen || 0,
 
@@ -146,8 +147,11 @@ export class StatManager {
             }
         }
 
-        final.maxHp = 10 + final.endurance * 5;
-        final.attackPower = (final.attackPower || 0) + 1 + final.strength * 2;
+        // 기본 체력과 공격력 공식을 완화하여 저레벨 전투의 생존 시간을 늘린다
+        // 이동 속도는 그대로 유지하되, 공격력 상승량을 절반으로 줄이고
+        // 체력은 더욱 높게 계산한다.
+        final.maxHp = 20 + final.endurance * 8;
+        final.attackPower = (final.attackPower || 0) + 1 + final.strength;
         final.maxMp = 10 + final.focus * 10;
         final.equipmentWeight = this.totalWeight;
         let speed = final.movement;
