@@ -26,10 +26,14 @@ export class RLObserver {
         this.GRID_WIDTH = 8;
         this.GRID_HEIGHT = 6;
         this.FEATURE_LENGTH = this.GRID_WIDTH * this.GRID_HEIGHT;
+        this.lastState = null;
+        this.lastAction = null;
+        this.currentPlayerUnits = null;
+        this.currentEnemyUnits = null;
     }
 
     async init() {
-        await this.predictionManager.init(3);
+        await this.predictionManager.init(12);
         this.mapWidth = this.mapManager
             ? this.mapManager.width * this.mapManager.tileSize
             : MAP_WIDTH;
@@ -71,6 +75,8 @@ export class RLObserver {
 
     onRoundStart({ round, playerInfo, enemyInfo }) {
         this.currentRound = round || 0;
+        this.currentPlayerUnits = playerInfo;
+        this.currentEnemyUnits = enemyInfo;
         this.predictionPromise = this.predictionManager
             .predict(playerInfo, enemyInfo)
             .then(({ prediction, features }) => {
@@ -125,6 +131,35 @@ export class RLObserver {
             this.roundFeatures = null;
             this.render();
         })();
+    }
+
+    /**
+     * 주기적으로 호출되어 상태 전이와 보상을 기록합니다.
+     */
+    recordTick() {
+        if (!this.rlManager) return;
+        const state = this.predictionManager.buildFeatures(
+            this.currentPlayerUnits || [],
+            this.currentEnemyUnits || []
+        );
+        const action = this.rlManager.getLastAction ? this.rlManager.getLastAction() : null;
+        if (this.lastState && this.lastAction !== null) {
+            const reward = this.calculateReward(this.lastState, state, this.lastAction);
+            this.rlManager.recordExperience({ state: this.lastState, action: this.lastAction, reward, nextState: state });
+        }
+        this.lastState = state;
+        this.lastAction = action;
+    }
+
+    calculateReward(prevState, nextState, action) {
+        let reward = 0;
+        const healthPrev = prevState[1];
+        const healthNext = nextState[1];
+        reward += (healthNext - healthPrev) * 10;
+        if (action === 0 && nextState[nextState.length - 2] > prevState[prevState.length - 2]) {
+            reward += 2.5;
+        }
+        return reward;
     }
 
     render() {

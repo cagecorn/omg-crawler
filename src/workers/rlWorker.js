@@ -3,7 +3,7 @@ importScripts('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs');
 let tf = self.tf;
 let model = null;
 let dataset = []; // 학습 데이터를 저장할 배열
-let featureLength = 6; // 기본 특성 길이
+let featureLength = 12; // 기본 특성 길이
 
 /**
  * AI 모델을 초기화합니다.
@@ -84,6 +84,13 @@ async function handleMessage(e) {
                 postMessage({ type: 'prediction', id, prediction: Array.from(prediction) });
             } else {
                 postMessage({ type: 'prediction', id, prediction: null });
+            }
+            break;
+        case 'train':
+            if (e.data.experience) {
+                const exp = e.data.experience;
+                dataset.push({ input: exp.state, output: [exp.reward, 0] });
+                if (dataset.length % 20 === 0) await trainModel();
             }
             break;
         case 'save':
