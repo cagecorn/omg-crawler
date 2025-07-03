@@ -167,7 +167,7 @@ export class ItemAIManager {
             target.hp = Math.min(target.maxHp, target.hp + heal);
         }
 
-        if (item.effectId && this.effectManager) {
+        if (item.effectId && this.effectManager && !item.applyOnImpact) {
             if (item.aoeRadius && allEntities.length > 0) {
                 const centerX = target.x + target.width / 2;
                 const centerY = target.y + target.height / 2;
