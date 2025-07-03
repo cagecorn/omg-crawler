@@ -54,6 +54,31 @@ export class RLManager {
 
 
     saveDataset() {
-        this._send('save');
+        if (!this.ready || !this.worker) return Promise.resolve(null);
+        return new Promise((resolve) => {
+            const handler = (e) => {
+                if (e.data.type === 'dataset') {
+                    this.worker.removeEventListener('message', handler);
+                    resolve(e.data.dataset);
+                }
+            };
+            this.worker.addEventListener('message', handler);
+            this.worker.postMessage({ type: 'save' });
+        });
+    }
+
+    async downloadDataset(filename = 'rl-dataset.json') {
+        const data = await this.saveDataset();
+        if (!data) return null;
+        if (typeof document !== 'undefined') {
+            const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+        return data;
     }
 }
