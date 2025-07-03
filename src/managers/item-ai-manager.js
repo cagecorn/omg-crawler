@@ -162,39 +162,15 @@ export class ItemAIManager {
     _useItem(user, item, target, allEntities = []) {
         if (!item || (item.quantity && item.quantity <= 0)) return;
 
-        if (item.healAmount) {
-            const heal = item.healAmount;
-            target.hp = Math.min(target.maxHp, target.hp + heal);
-        }
-
-        if (item.effectId && this.effectManager) {
-            if (item.aoeRadius && allEntities.length > 0) {
-                const centerX = target.x + target.width / 2;
-                const centerY = target.y + target.height / 2;
-                const aoeTargets = findEntitiesInRadius(centerX, centerY, item.aoeRadius, allEntities);
-                for (const aoeT of aoeTargets) {
-                    if (aoeT.isFriendly !== user.isFriendly) {
-                        this.effectManager.addEffect(aoeT, item.effectId);
-                    }
-                }
-                if (this.vfxManager) {
-                    this.vfxManager.createNovaEffect({ x: centerX, y: centerY, width: 0, height: 0 }, {
-                        radius: item.aoeRadius,
-                        image: 'shock-wave'
-                    });
-                }
-            } else {
-                this.effectManager.addEffect(target, item.effectId);
-            }
-        }
-
-        if (this.vfxManager) {
-            const scale = (item.type === 'artifact' || item.tags?.includes('artifact')) ? 0.33 : 1;
-            this.vfxManager.addItemUseEffect(target, item.image, { scale });
-        }
+        const applyEffects = (proj = null) => {
+            const source = proj || user;
+            this._applyItemHitEffects(source, item, target, allEntities);
+        };
 
         if (this.projectileManager && user !== target) {
-            this.projectileManager.throwItem(user, target, item);
+            this.projectileManager.throwItem(user, target, item, 0, null, applyEffects);
+        } else {
+            applyEffects();
         }
 
         if (item.quantity > 1) {
@@ -207,6 +183,39 @@ export class ItemAIManager {
 
         if (this.eventManager) {
             this.eventManager.publish('log', { message: `${user.constructor.name} uses ${item.name}` });
+        }
+    }
+
+    _applyItemHitEffects(source, item, target, allEntities = []) {
+        if (item.healAmount) {
+            const heal = item.healAmount;
+            target.hp = Math.min(target.maxHp, target.hp + heal);
+        }
+
+        if (item.effectId && this.effectManager) {
+            if (item.aoeRadius && allEntities.length > 0) {
+                const centerX = target.x + target.width / 2;
+                const centerY = target.y + target.height / 2;
+                const aoeTargets = findEntitiesInRadius(centerX, centerY, item.aoeRadius, allEntities);
+                for (const aoeT of aoeTargets) {
+                    if (aoeT.isFriendly !== source.isFriendly) {
+                        this.effectManager.addEffect(aoeT, item.effectId, source);
+                    }
+                }
+                if (this.vfxManager) {
+                    this.vfxManager.createNovaEffect({ x: centerX, y: centerY, width: 0, height: 0 }, {
+                        radius: item.aoeRadius,
+                        image: 'shock-wave'
+                    });
+                }
+            } else {
+                this.effectManager.addEffect(target, item.effectId, source);
+            }
+        }
+
+        if (this.vfxManager) {
+            const scale = (item.type === 'artifact' || item.tags?.includes('artifact')) ? 0.33 : 1;
+            this.vfxManager.addItemUseEffect(target, item.image, { scale });
         }
     }
 }

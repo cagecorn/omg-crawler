@@ -453,6 +453,7 @@ export class Item {
 
 export class Projectile {
     constructor(config) {
+        this.id = Math.random().toString(36).slice(2);
         this.x = config.x;
         this.y = config.y;
         // 처음 생성된 위치를 저장해 궤적을 그릴 때 사용한다
@@ -467,6 +468,8 @@ export class Projectile {
         this.damage = config.damage;
         this.knockbackStrength = config.knockbackStrength || 0;
         this.caster = config.caster;
+        this.isFriendly = config.isFriendly ?? config.caster?.isFriendly;
+        this.unitType = 'projectile';
         // 밝게 그려야 하는 마법 투사체의 경우 blendMode를 'lighter'로 설정할 수 있다
         this.blendMode = config.blendMode || null;
 

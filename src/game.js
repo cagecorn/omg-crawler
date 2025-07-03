@@ -1439,18 +1439,23 @@ export class Game {
     }
 
     update = (deltaTime) => {
-        if (this.gameState.currentState === 'WORLD') {
+        const { gameState, mercenaryManager, monsterManager, itemManager, mapManager, inputHandler, effectManager, turnManager, metaAIManager, eventManager, equipmentManager, pathfindingManager, microEngine, microItemAIManager } = this;
+        const commonEntities = [gameState.player, ...mercenaryManager.mercenaries, ...(this.petManager?.pets || [])];
+
+        if (gameState.currentState === 'WORLD') {
             this.worldEngine.update();
+            effectManager.update(commonEntities);
             return;
-        } else if (this.gameState.currentState === 'FORMATION_SETUP') {
+        } else if (gameState.currentState === 'FORMATION_SETUP') {
+            effectManager.update(commonEntities);
             return;
-        } else if (this.gameState.currentState !== 'COMBAT') {
+        } else if (gameState.currentState !== 'COMBAT') {
+            effectManager.update(commonEntities);
             return;
         }
 
         this.handleCameraReset();
 
-        const { gameState, mercenaryManager, monsterManager, itemManager, mapManager, inputHandler, effectManager, turnManager, metaAIManager, eventManager, equipmentManager, pathfindingManager, microEngine, microItemAIManager } = this;
         if (gameState.isPaused || gameState.isGameOver) return;
 
         const allEntities = [gameState.player, ...mercenaryManager.mercenaries, ...monsterManager.monsters, ...(this.petManager?.pets || [])];
