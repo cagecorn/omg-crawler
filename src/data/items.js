@@ -367,8 +367,9 @@ export const ITEMS = {
         name: '쇼크 그레네이드',
         type: 'consumable',
         tags: ['consumable', 'attack_item'],
-        imageKey: 'potion',
-        effectId: 'shock'
+        imageKey: 'shock-grenade',
+        effectId: 'shock',
+        aoeRadius: 128
     },
 
     // --- 룬 아이템 ---

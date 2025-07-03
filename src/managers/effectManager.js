@@ -4,6 +4,20 @@ export class EffectManager {
     constructor(eventManager, vfxManager = null) {
         this.eventManager = eventManager;
         this.vfxManager = vfxManager;
+        this.entityEffects = new Map();
+        if (this.eventManager) {
+            this.eventManager.subscribe('entity_removed', ({ victimId }) => {
+                const effects = this.entityEffects.get(victimId);
+                if (effects) {
+                    for (const eff of effects) {
+                        if (this.vfxManager && eff.emitter) {
+                            this.vfxManager.removeEmitter(eff.emitter);
+                        }
+                    }
+                    this.entityEffects.delete(victimId);
+                }
+            });
+        }
         console.log("[EffectManager] Initialized");
     }
 
@@ -63,6 +77,8 @@ export class EffectManager {
         }
 
         target.effects.push(newEffect);
+        if (!this.entityEffects.has(target.id)) this.entityEffects.set(target.id, []);
+        this.entityEffects.get(target.id).push(newEffect);
         this.eventManager.publish('stats_changed', { entity: target });
     }
 
@@ -86,6 +102,12 @@ export class EffectManager {
         }
 
         target.effects = target.effects.filter(e => e !== effect);
+        const list = this.entityEffects.get(target.id);
+        if (list) {
+            const idx = list.indexOf(effect);
+            if (idx >= 0) list.splice(idx, 1);
+            if (list.length === 0) this.entityEffects.delete(target.id);
+        }
         this.eventManager.publish('stats_changed', { entity: target });
     }
 

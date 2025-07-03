@@ -71,4 +71,15 @@ test('신속 이동 속도 증가', () => {
     assert.strictEqual(stats.get('movementSpeed'), base);
 });
 
+test('effects cleaned up on entity removal', () => {
+    const eventManager = new EventManager();
+    const removed = [];
+    const vfx = { removeEmitter:e=>removed.push(e), addEmitter:()=>({}) };
+    const effectManager = new EffectManager(eventManager, vfx);
+    const target = { id:'t', effects:[], stats:{ recalculate() {}, increaseBaseStat() {} } };
+    effectManager.addEffect(target, 'poison');
+    eventManager.publish('entity_removed', { victimId:'t' });
+    assert.strictEqual(removed.length, 1, 'emitter removed');
+});
+
 });
