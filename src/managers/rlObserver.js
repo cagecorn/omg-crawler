@@ -53,8 +53,10 @@ export class RLObserver {
                 });
                 document.body.appendChild(this.panel);
             }
-            this.panel.innerHTML = '<div class="log-title">-- TensorFlow Stats --</div><div id="rl-content"></div>';
+            this.panel.innerHTML = '<div class="log-title">-- TensorFlow Stats --</div><div id="rl-content"></div><button id="rl-download-btn">데이터 다운로드</button>';
             this.content = this.panel.querySelector('#rl-content');
+            const dlBtn = this.panel.querySelector('#rl-download-btn');
+            if (dlBtn) dlBtn.onclick = () => this.rlManager.downloadDataset();
             this.render();
         }
         if (this.eventManager) {
