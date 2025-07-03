@@ -44,9 +44,10 @@ export class MonsterManager {
     addMonster(monster) {
         this.monsters.push(monster);
         if (this.metaAIManager) {
+            const targetGroupId = monster.groupId || 'dungeon_monsters';
             const group =
-                this.metaAIManager.groups['dungeon_monsters'] ||
-                this.metaAIManager.createGroup('dungeon_monsters');
+                this.metaAIManager.groups[targetGroupId] ||
+                this.metaAIManager.createGroup(targetGroupId);
             group.addMember(monster);
         }
     }

@@ -116,6 +116,12 @@ export class SkillManager {
         });
         monster.isFriendly = caster.isFriendly;
         monster.properties.summonedBy = caster.id;
+        if (Array.isArray(caster.minions)) {
+            caster.minions.push(monster);
+        } else {
+            caster.minions = [monster];
+        }
+
         if (this.monsterManager) {
             this.monsterManager.addMonster(monster);
         } else if (this.metaAIManager) {
